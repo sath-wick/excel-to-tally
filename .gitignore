@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+env/
+
+# Output files
+output/
+*.xlsx
+
+# Lock file
+app.lock
+
+# Input statements
+input/
+
+# OS junk
+.DS_Store
+Thumbs.db
