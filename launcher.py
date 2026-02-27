@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import msvcrt
 import tkinter as tk
 from tkinter import filedialog
 
@@ -34,6 +35,8 @@ BANK_CATEGORIES = {
     ]
 }
 
+BACK = "__BACK__"
+
 
 def clear():
     os.system("cls")
@@ -49,7 +52,37 @@ def select_file():
     return file_path
 
 
-def select_from_list(options, title):
+def select_sales_file():
+    root = tk.Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Select Sales Excel File",
+        filetypes=[("Excel Files", "*.xlsx *.xls")]
+    )
+    return file_path
+
+
+def read_menu_choice(max_option, allow_back=False):
+    while True:
+        key = msvcrt.getch()
+
+        # Ignore special keys (arrows, function keys, etc.)
+        if key in (b"\x00", b"\xe0"):
+            msvcrt.getch()
+            continue
+
+        if allow_back and key == b"\x1b":
+            print("Esc")
+            return BACK
+
+        if key.isdigit():
+            choice = int(key.decode())
+            if 1 <= choice <= max_option:
+                print(choice)
+                return choice
+
+
+def select_from_list(options, title, allow_back=False):
     clear()
     print("============================================")
     print(f"        {title}")
@@ -58,13 +91,13 @@ def select_from_list(options, title):
     for idx, item in enumerate(options, start=1):
         print(f"{idx}. {item}")
 
-    print()
-    choice = input("Enter option number: ").strip()
+    print("\nPress number key to select.")
+    if allow_back:
+        print("Press Esc to go back.")
 
-    if not choice.isdigit():
-        return None
-
-    choice = int(choice)
+    choice = read_menu_choice(len(options), allow_back=allow_back)
+    if choice == BACK:
+        return BACK
 
     if 1 <= choice <= len(options):
         return options[choice - 1]
@@ -73,51 +106,71 @@ def select_from_list(options, title):
 
 
 def main():
-    clear()
-    print("============================================")
-    print("         TALLY IMPORT GENERATOR")
-    print("============================================\n")
+    while True:
+        clear()
+        print("============================================")
+        print("         TALLY IMPORT GENERATOR")
+        print("============================================\n")
 
-    print("Select Import Type:")
-    print("1. Sales")
-    print("2. Purchases")
-    print("3. Statements\n")
+        print("Select Import Type:")
+        print("1. Sales")
+        print("2. Purchases")
+        print("3. Statements\n")
+        print("Press number key to select.")
 
-    choice = input("Enter option number: ").strip()
+        choice = read_menu_choice(3)
 
-    if choice != "3":
-        print("\nOnly 'Statements' is implemented right now.")
-        input("Press Enter to exit...")
-        sys.exit()
+        if choice == 1:
+            print("\nSelect the sales input Excel file...")
+            file_path = select_sales_file()
 
-    # Step 1: Select Bank Category
-    category = select_from_list(list(BANK_CATEGORIES.keys()), "SELECT BANK CATEGORY")
+            if not file_path:
+                print("\nNo file selected. Exiting.")
+                sys.exit()
 
-    if not category:
-        print("\nInvalid selection. Exiting.")
-        sys.exit()
+            print(f"\nSelected Sales File: {file_path}")
+            print("\nProcessing...\n")
+            subprocess.run(["python", "sales_main.py", file_path])
+            return
 
-    # Step 2: Select Bank Ledger
-    bank_ledger = select_from_list(BANK_CATEGORIES[category], "SELECT BANK")
+        if choice == 2:
+            print("\nOnly 'Sales' and 'Statements' are implemented right now.")
+            print("Press any key to exit...")
+            msvcrt.getch()
+            sys.exit()
 
-    if not bank_ledger:
-        print("\nInvalid selection. Exiting.")
-        sys.exit()
+        while True:
+            category = select_from_list(
+                list(BANK_CATEGORIES.keys()),
+                "SELECT BANK CATEGORY",
+                allow_back=True
+            )
 
-    # Step 3: Select PDF File
-    print("\nSelect the bank statement PDF...")
-    file_path = select_file()
+            if category == BACK:
+                break
 
-    if not file_path:
-        print("\nNo file selected. Exiting.")
-        sys.exit()
+            while True:
+                bank_ledger = select_from_list(
+                    BANK_CATEGORIES[category],
+                    "SELECT BANK",
+                    allow_back=True
+                )
 
-    print(f"\nSelected Bank: {bank_ledger}")
-    print(f"Selected File: {file_path}")
-    print("\nProcessing...\n")
+                if bank_ledger == BACK:
+                    break
 
-    # Pass file path and bank ledger to main.py
-    subprocess.run(["python", "main.py", file_path, bank_ledger])
+                print("\nSelect the bank statement PDF...")
+                file_path = select_file()
+
+                if not file_path:
+                    print("\nNo file selected. Exiting.")
+                    sys.exit()
+
+                print(f"\nSelected Bank: {bank_ledger}")
+                print(f"Selected File: {file_path}")
+                print("\nProcessing...\n")
+                subprocess.run(["python", "main.py", file_path, bank_ledger])
+                return
 
 
 if __name__ == "__main__":

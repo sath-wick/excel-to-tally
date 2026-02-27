@@ -29,4 +29,8 @@ python launcher.py
 :: Remove lock file after exit
 if exist %LOCKFILE% del %LOCKFILE%
 
-exit
+echo.
+set /p _="Press Enter to close..."
+echo.
+
+exit /b 0
