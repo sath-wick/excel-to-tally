@@ -16,6 +16,12 @@ STANDARD_COLUMNS = [
 ]
 
 
+def is_sbi_bank_statement(bank_ledger):
+    if bank_ledger is None:
+        return False
+    return "sbi" in str(bank_ledger).strip().lower()
+
+
 # -----------------------------------------------------
 # Header Utilities
 # -----------------------------------------------------
@@ -137,6 +143,69 @@ def clean_text(value):
     return re.sub(r"\s+", " ", str(value).replace("\n", " ")).strip()
 
 
+def split_value_date_and_suffix(value):
+    text = clean_text(value)
+    if text == "":
+        return None, None
+
+    patterns = [
+        r"^(\d{1,2}\s+[A-Za-z]{3,9}\s+20\d{2})\s+(.+)$",
+        r"^(\d{1,2}[-/][A-Za-z]{3,9}[-/]20\d{2})\s+(.+)$",
+        r"^(\d{1,2}[-/]\d{1,2}[-/]20\d{2})\s+(.+)$",
+    ]
+
+    for pattern in patterns:
+        match = re.match(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+
+        parsed_date = pd.to_datetime(match.group(1), errors="coerce", dayfirst=True)
+        if pd.isna(parsed_date):
+            continue
+
+        normalized_date = f"{parsed_date.day} {parsed_date.strftime('%b')} {parsed_date.year}"
+        suffix = clean_text(match.group(2))
+        if suffix == "":
+            return None, None
+
+        return normalized_date, suffix
+
+    return None, None
+
+
+def move_value_date_suffix_to_description(df):
+    if df.empty:
+        return df
+    if "Value Date" not in df.columns or "Description" not in df.columns:
+        return df
+
+    for i in range(len(df)):
+        value_date = clean_text(df.loc[i, "Value Date"])
+        description = clean_text(df.loc[i, "Description"])
+
+        if value_date != "":
+            date_only, suffix = split_value_date_and_suffix(value_date)
+            if not date_only or not suffix:
+                continue
+
+            if description.lower().startswith(suffix.lower()):
+                merged_description = description
+            else:
+                merged_description = clean_text(f"{suffix} {description}")
+
+            df.loc[i, "Value Date"] = date_only
+            df.loc[i, "Description"] = merged_description
+            continue
+
+        # Inverse case: Value Date is empty but a leading date is merged into Description.
+        desc_date, desc_remainder = split_value_date_and_suffix(description)
+        if desc_date and desc_remainder:
+            df.loc[i, "Value Date"] = desc_date
+            df.loc[i, "Description"] = desc_remainder
+
+    return df
+
+
 def is_header_line(line):
     normalized = clean_text(line).upper()
     return (
@@ -255,12 +324,7 @@ def has_valid_transactions(df):
     return False
 
 
-# -----------------------------------------------------
-# Main Extraction Function
-# -----------------------------------------------------
-
-def extract_bank_statement(pdf_path, output_file):
-
+def extract_table_statement(pdf_path):
     tables = camelot.read_pdf(pdf_path, pages="all")
 
     print(f"Total tables detected: {tables.n}")
@@ -317,7 +381,6 @@ def extract_bank_statement(pdf_path, output_file):
         dataframes.append(df)
 
     final_df = pd.DataFrame()
-
     if dataframes:
         final_df = pd.concat(dataframes, ignore_index=True)
 
@@ -338,38 +401,64 @@ def extract_bank_statement(pdf_path, output_file):
         # Merge multiline spillovers
         final_df = merge_spillover_rows(final_df)
 
-    if not has_valid_transactions(final_df):
-        print("Switching to text-based extraction (pdfplumber fallback)...")
+    return final_df, accepted_tables, ignored_tables
+
+
+# -----------------------------------------------------
+# Main Extraction Function
+# -----------------------------------------------------
+
+def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
+    final_df = pd.DataFrame()
+    accepted_tables = 0
+    ignored_tables = 0
+
+    sbi_statement = is_sbi_bank_statement(bank_ledger)
+
+    if sbi_statement:
+        print("SBI detected: using text-based row extraction by default...")
         final_df = extract_text_statement(pdf_path)
+        final_df = move_value_date_suffix_to_description(final_df)
+
+    if not has_valid_transactions(final_df):
+        final_df, accepted_tables, ignored_tables = extract_table_statement(pdf_path)
+        final_df = move_value_date_suffix_to_description(final_df)
+
+    if not has_valid_transactions(final_df):
+        if not sbi_statement:
+            print("Switching to text-based extraction (pdfplumber fallback)...")
+            final_df = extract_text_statement(pdf_path)
+            final_df = move_value_date_suffix_to_description(final_df)
 
     if not has_valid_transactions(final_df):
         raise ValueError("No valid tables found in PDF. Extraction aborted.")
 
-    # Save Excel
-    final_df.to_excel(output_file, index=False)
+    if output_file:
+        # Save Excel
+        final_df.to_excel(output_file, index=False)
 
-    # Format as Excel table
-    wb = load_workbook(output_file)
-    ws = wb.active
+        # Format as Excel table
+        wb = load_workbook(output_file)
+        ws = wb.active
 
-    last_row = ws.max_row
-    last_col = ws.max_column
-    table_range = f"A1:{ws.cell(row=last_row, column=last_col).coordinate}"
+        last_row = ws.max_row
+        last_col = ws.max_column
+        table_range = f"A1:{ws.cell(row=last_row, column=last_col).coordinate}"
 
-    excel_table = Table(displayName="CombinedTable", ref=table_range)
+        excel_table = Table(displayName="CombinedTable", ref=table_range)
 
-    style = TableStyleInfo(
-        name="TableStyleMedium9",
-        showFirstColumn=False,
-        showLastColumn=False,
-        showRowStripes=True,
-        showColumnStripes=False
-    )
+        style = TableStyleInfo(
+            name="TableStyleMedium9",
+            showFirstColumn=False,
+            showLastColumn=False,
+            showRowStripes=True,
+            showColumnStripes=False
+        )
 
-    excel_table.tableStyleInfo = style
-    ws.add_table(excel_table)
+        excel_table.tableStyleInfo = style
+        ws.add_table(excel_table)
 
-    wb.save(output_file)
+        wb.save(output_file)
 
     print(f"Tables accepted: {accepted_tables}")
     print(f"Tables ignored : {ignored_tables}")

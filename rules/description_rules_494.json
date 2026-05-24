@@ -1,0 +1,589 @@
+[
+  {
+    "pattern": [
+      "Debit Interest Capitalized"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Bank Interest",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "Car EMI"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Vehicle Loan",
+    "payment_ledger": "Vehicle Loan",
+    "receipt_ledger": "Vehicle Loan",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "Home loan",
+      "ACH"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Housing Loan (Axis Bank)",
+    "receipt_ledger": "Housing Loan (Axis Bank)",
+    "payment_ledger": "Housing Loan (Axis Bank)",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "D MAHENDER REDDY"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Mahender Reddy Loan",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Madoori Ganesh",
+      "M GANESH"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "M Ganesh",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "M Narender Kumar"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Narender Kumar",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "G NARSHING RAO AND CO"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "G Narsing Rao",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Mahavishnu and Sharma"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Mahavishnu & Sarma",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "AAR BSC JV"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Investment in AAR Ramu (JV)",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "RAMESH KRISHNA ENGINEERS PVT LTD"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Ramesh Krishna Engineers",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "chettinad cement"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Chettinad Cement",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Sri Venkateswara enterprises",
+      "SRI VENKATESHWARA ENTERPRISES"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Sri Venkateshwara Enterprises",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "New Kalpana trading"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "New Kalpana Trading",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "SRi Sai Krishna steeland cement",
+      "M/S SRI SAI KRISHNA STEEL AND CEMENT"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Sri Sai Krishna Steel & Cement",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "SRI SAI KRISHNA TRADERS"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Sri Sai Krishna Traders",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Panchmuki Cement Agency",
+      "PANCHAMUKHI CEMENT AGENCY"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Panchamukhi Cement Agencies",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Mahavira Cement Agency"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Mahavira Cements",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "K Nageshwar Rao cement agency",
+      "K Nageswer Cement Agencies",
+      "K NAGESHWAR RAO  CEMENT AGENCY"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Nageshwar Rao Cement Agencies",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "SREE VENKATESHWARA WHEEL TECH"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Sri Venkateshwara Wheel Tech",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Manikanta Traders"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Manikanta Traders Toorpan",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "BAHETI STEEL INDUSTRIES"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Baheti Steels",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "JOHNSON LIFTS PVT LTD"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Johnson Lifts",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "HAREESH\\s*ENTERPRISES"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Hareesh Enterprises",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "KARTHIK CEMENT TRADING COMPANY"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Karthik Cement Trading",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "R D ENTERPRISES"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "R.D Enterprises",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Adhishri Technologies"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Adhishri Technologies",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "HARSHA AUTOMOTIVES P  LTD"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Harsha Automotives P LTD",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "M/s.GORAK COMPUTERS"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Gorak Computers",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "META-SYNTEC"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Meta Sintec",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "REGISTRAR JNTUH"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Registrar JNTUH",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "THAPONISHTA CONSTRUCTION"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Taponisha Constructions",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "HYDERABAD ZINC TECH INDUSTRIES"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Hyderabad Zinc Tech",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "SOMANI ISPAT PVT LTD"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Somani Ispat",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Priyanka Engineering"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Priyanka Engg",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "School fee",
+      "AUTOPAY YBL CREDIT",
+      "CTS CLG"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "ARJUN RAO",
+    "priority": 90
+  },
+  {
+    "pattern": [
+      "ARJUN RAO RENT"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "ARJUN RAO",
+    "priority": 90
+  },
+  {
+    "pattern": [
+      "SCROnline",
+      "SRONLINE",
+      "SRONLINE REFUND"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Security Deposit",
+    "priority": 85
+  },
+  {
+    "pattern": [
+      "SCR"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "S.C.Rly",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "SBI 79382",
+      "ABBINENIARJUNRAOSBI79382",
+      "XXX9382"
+    ],
+    "voucher_type": "Contra",
+    "ledger": "SBI 9382",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "107063400001060"
+    ],
+    "voucher_type": "Contra",
+    "ledger": "YES 1060",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "081763300002085"
+    ],
+    "voucher_type": "Contra",
+    "ledger": "YES 2085",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "041352000003332",
+      "XX3332"
+    ],
+    "voucher_type": "Contra",
+    "ledger": "BANK 3332",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "XX1511"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Receipt",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "KOTAK 9699"
+    ],
+    "voucher_type": "Contra",
+    "ledger": "KOTAK 9699",
+    "priority": 80
+  },
+  {
+    "pattern": [
+      "(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\\s\\d{2,4}\\s*$"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Salaries",
+    "priority": 85
+  },
+  {
+    "pattern": [
+      "NET-TPT",
+      "misl",
+      "MSN",
+      "NZB",
+      "KZJ",
+      "JCB",
+      "bittu centring",
+      "G Chandra Shekar Supr",
+      "TM sidin",
+      "Fab\\s*$",
+      "\\bGWD\\b",
+      "\\b\\w+\\sFab\\b",
+      "Lipika Ray Bittu wife AC",
+      "Niteen Kapase",
+      "\\bRUB\\b",
+      "\\b\\w+\\s(?:trans|transpor)\\b/?(?=$|/)",
+      "Pre\\s*cast",
+      "Labour",
+      "RAGHAVENDAR SUOR",
+      "RMC RGP",
+      "SUPL",
+      "NARAYANANA SINGARAM",
+      "JOHNSON LIFT P LTD",
+      "YADAMMA CHINNI",
+      "MOBARAK",
+      "KARAMTOTH LAXMAM ",
+      "VIKRAM DBS",
+      "TM RGP",
+      "BOLLERO DRIVER"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Labour Charges",
+    "priority": 60
+  },
+  {
+    "pattern": [
+      "SBM TRAVEL WORLD"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Travelling Expenses",
+    "priority": 70
+  },
+  {
+    "pattern": [
+      "Super steel"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Super Steel Iron Merchent",
+    "priority": 90
+  },
+  {
+    "pattern": [
+      "GTEE",
+      "BOOKED",
+      "STMP-PAPER"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Bank Charges",
+    "priority": 60
+  },
+  {
+    "pattern": [
+      "EMI"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Loan",
+    "priority": 10
+  },
+  {
+    "pattern": [
+      "Chief coordinater"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Chief Coordinator",
+    "priority": 90
+  },
+  {
+    "pattern": [
+      "Guru Krupa Crane"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Guru Krupa Granites",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Sri Mallikharjun traders"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Mallikarjuna Cement Traders",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "S K TRADERS"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "SK TRADERS",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "NCL INDUSTRIES LTD"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "NCL Industries",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "SRINIVAs steel traders"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Srinivasa Traders",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "M/S SRINIVASA STEEL TRADERS"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Srinivasa Steels",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Black Rock Industies"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Black Rock Industries",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "TV Subba Rao",
+      "T V SUBBA RAO"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "T.V.Subbarao",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "Yes Bank Limited"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "YES BANK",
+    "priority": 10
+  },
+  {
+    "pattern": [
+      "G Pandu"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Consultancy Charges",
+    "priority": 90
+  },
+  {
+    "pattern": [
+      "Hand loan"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Hand Loan",
+    "priority": 85
+  },
+  {
+    "pattern": [
+      "SRI VIJAYALAKSHMI STEELS"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "SRI VIJAYALAKSHMI STEELS",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "PULLA REDDY"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "PULLA REDDY GWD",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "BSA STEEL"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "BSA Steels (P) LTD",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "BHASKAR RAO"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Bhaskar Rao",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "BHASKAR RAO-",
+      "BHASKAR RAO",
+      "BHASKAR RAO/"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Bhaskar Rao",
+    "priority": 95
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "description_ignore_rules": [
+    {
+      "name" : "Ignore Opening Balance Entry",
+      "pattern" : "B/F ...",
+      "mode": "exact",
+      "case_sensitive": false
+    }
+  ]
+}

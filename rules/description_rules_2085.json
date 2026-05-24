@@ -1,0 +1,38 @@
+[
+  {
+    "pattern": [".+"],
+    "payment_ledger": "Labour Charges",
+    "receipt_ledger": "Receipt",
+    "priority": 1
+  },
+  {
+    "pattern": ["LIFE INSURANCE"],
+    "voucher_type": "Payment",
+    "ledger": "Insurance",
+    "priority": 6
+  },
+  {
+    "pattern": ["CHRGS", "GST"],
+    "voucher_type": "Payment",
+    "ledger": "Bank Charges",
+    "priority": 5
+  },
+  {
+    "pattern": ["Credit Interest Capitalised"],
+    "voucher_type": "Receipt",
+    "ledger": "Interest Recd",
+    "priority": 5
+  },
+  {
+    "pattern": ["CLG NUN"],
+    "voucher_type": "Payment",
+    "ledger": "ARJUN RAO",
+    "priority": 5
+  },
+  {
+    "pattern": ["MARUTHI ENTERPRISES"],
+    "voucher_type": "Payment",
+    "ledger": "Maruthi Traders",
+    "priority": 6
+  }
+]

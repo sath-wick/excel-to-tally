@@ -1,0 +1,66 @@
+[
+  {
+    "pattern": [
+      "E-auction"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Security Deposit",
+    "priority": 99
+  },
+  {
+    "pattern": [
+      "Refund"
+    ],
+    "voucher_type": "Receipt",
+    "ledger": "Security Deposit",
+    "priority": 99
+  },
+  {
+    "pattern": [
+      "Indian Oil"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Vehicle Maintainance",
+    "priority": 99
+  },
+  {
+    "pattern": [
+      "KOTAK MAHINDRA GENERAL",
+      "MAHINDRA\\s*GENERAL"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Insurance",
+    "priority": 99
+  },
+  {
+    "pattern": [
+      "Central\\s*Board\\s*of\\s*Direct",
+      "\\bCBDT\\b",
+      "Central Board of Direct"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "TDS",
+    "priority": 99
+  },
+  {
+    "pattern": [
+      "(?i)\baig[\\s\\-_]+general[\\s\\-_]+insuranc[a-z]*\\b",
+      "AIG General Insuranc-"
+    ],
+    "voucher_type": "Payment",
+    "ledger": "Insurance",
+    "priority": 99
+  },
+  {
+    "pattern":["Commissioner of Police"],
+    "voucher_type": "Payment",
+    "ledger": "Vehicle Maintainance",
+    "priority": 99
+  },
+  {
+    "pattern":["UPI"],
+    "voucher_type":"Payment",
+    "ledger":"Staff Welfare",
+    "priority": 1
+  }
+]

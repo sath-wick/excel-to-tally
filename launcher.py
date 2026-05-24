@@ -10,7 +10,7 @@ BANK_CATEGORIES = {
     "YES": [
         "YES 1060",
         "YES 2085",
-        "YES BANK"
+        "494"
     ],
     "SBI": [
         "SBI 4452",
@@ -62,6 +62,16 @@ def select_sales_file():
     return file_path
 
 
+def select_purchases_file():
+    root = tk.Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Select Purchases Excel File",
+        filetypes=[("Excel Files", "*.xlsx *.xls")]
+    )
+    return file_path
+
+
 def read_menu_choice(max_option, allow_back=False):
     while True:
         key = msvcrt.getch()
@@ -105,6 +115,53 @@ def select_from_list(options, title, allow_back=False):
     return None
 
 
+def extract_bank_code(bank_ledger):
+    ledger_text = str(bank_ledger).strip()
+    digits_only = "".join(ch for ch in ledger_text if ch.isdigit())
+    return digits_only if digits_only else ledger_text
+
+
+def run_excel_import_flow(module_name, script_name, file_selector):
+    while True:
+        category = select_from_list(
+            list(BANK_CATEGORIES.keys()),
+            "SELECT BANK CATEGORY",
+            allow_back=True
+        )
+
+        if category == BACK:
+            return False
+
+        while True:
+            bank_ledger = select_from_list(
+                BANK_CATEGORIES[category],
+                "SELECT BANK",
+                allow_back=True
+            )
+
+            if bank_ledger == BACK:
+                break
+
+            if extract_bank_code(bank_ledger) != "494":
+                print(f"\n{module_name} is currently available only for bank 494.")
+                print("Press any key to choose another bank...")
+                msvcrt.getch()
+                continue
+
+            print(f"\nSelect the {module_name.lower()} input Excel file...")
+            file_path = file_selector()
+
+            if not file_path:
+                print("\nNo file selected. Exiting.")
+                sys.exit()
+
+            print(f"\nSelected Bank: {bank_ledger}")
+            print(f"Selected {module_name} File: {file_path}")
+            print("\nProcessing...\n")
+            subprocess.run(["python", script_name, file_path, bank_ledger])
+            return True
+
+
 def main():
     while True:
         clear()
@@ -121,23 +178,14 @@ def main():
         choice = read_menu_choice(3)
 
         if choice == 1:
-            print("\nSelect the sales input Excel file...")
-            file_path = select_sales_file()
-
-            if not file_path:
-                print("\nNo file selected. Exiting.")
-                sys.exit()
-
-            print(f"\nSelected Sales File: {file_path}")
-            print("\nProcessing...\n")
-            subprocess.run(["python", "sales_main.py", file_path])
-            return
+            if run_excel_import_flow("Sales", "sales_main.py", select_sales_file):
+                return
+            continue
 
         if choice == 2:
-            print("\nOnly 'Sales' and 'Statements' are implemented right now.")
-            print("Press any key to exit...")
-            msvcrt.getch()
-            sys.exit()
+            if run_excel_import_flow("Purchases", "purchases_main.py", select_purchases_file):
+                return
+            continue
 
         while True:
             category = select_from_list(
