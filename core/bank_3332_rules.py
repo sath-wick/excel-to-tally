@@ -7,7 +7,7 @@ def apply_bank_specific_rule_override(rule, transaction, bank_ledger):
     if not _is_special_bank(bank_ledger):
         return rule
 
-    if str(rule.get("voucher_type", "")).strip() != "Payment":
+    if getattr(transaction, "direction", None) != "OUT":
         return rule
 
     if _normalize_text(rule.get("ledger")) != "labour charges":

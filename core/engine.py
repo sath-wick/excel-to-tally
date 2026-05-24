@@ -22,43 +22,52 @@ class VoucherEngine:
         if duplicate_json_path:
             self.duplicate_matcher = ExistingTransactionMatcher(duplicate_json_path)
 
+    def _resolve_voucher_type(self, rule, transaction):
+        """
+        Voucher type source of truth:
+        - Contra can be explicitly forced by rule.
+        - Otherwise decide from statement direction.
+        """
+        if bool(rule.get("is_contra")) or bool(rule.get("contra")):
+            return "Contra"
+
+        configured_type = str(rule.get("voucher_type", "")).strip().lower()
+        if configured_type == "contra":
+            return "Contra"
+
+        direction = getattr(transaction, "direction", None)
+        if direction == "OUT":
+            return "Payment"
+        if direction == "IN":
+            return "Receipt"
+        return None
+
     def _resolve_directional_rule(self, rule, transaction):
         """
         Optional extension:
-        - payment_ledger / out_ledger => OUT transactions as Payment
-        - receipt_ledger / in_ledger => IN transactions as Receipt
-        Falls back to original rule behavior when these keys are absent.
+        - payment_ledger / out_ledger => OUT transactions
+        - receipt_ledger / in_ledger => IN transactions
         """
-        direction = getattr(transaction, "direction", None)
-        has_directional_ledger = any(
-            key in rule
-            for key in ("payment_ledger", "out_ledger", "receipt_ledger", "in_ledger")
-        )
-
-        if not has_directional_ledger:
-            return rule
-
         resolved_rule = dict(rule)
+        direction = getattr(transaction, "direction", None)
 
         if direction == "OUT":
-            resolved_rule["voucher_type"] = "Payment"
             resolved_rule["ledger"] = (
                 rule.get("payment_ledger")
                 or rule.get("out_ledger")
                 or rule.get("ledger")
             )
-            return resolved_rule
-
-        if direction == "IN":
-            resolved_rule["voucher_type"] = "Receipt"
+        elif direction == "IN":
             resolved_rule["ledger"] = (
                 rule.get("receipt_ledger")
                 or rule.get("in_ledger")
                 or rule.get("ledger")
             )
-            return resolved_rule
+        else:
+            resolved_rule["ledger"] = rule.get("ledger")
 
-        return rule
+        resolved_rule["voucher_type"] = self._resolve_voucher_type(rule, transaction)
+        return resolved_rule
 
     def process(self, transactions):
         vouchers = []
