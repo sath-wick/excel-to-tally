@@ -4,7 +4,8 @@ import re
 
 class RuleEngine:
     def __init__(self, rule_path):
-        with open(rule_path, "r") as f:
+        # Use utf-8-sig so rule files saved with BOM are still readable.
+        with open(rule_path, "r", encoding="utf-8-sig") as f:
             self.rules = json.load(f)
 
         # Highest priority first
