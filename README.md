@@ -1,2 +1,2 @@
-# Excel/PDF to Tally
+# Bank Statement to Tally
 A framework that extracts data from raw bank statements and excel files and transforms them to import ready data for Tally.
