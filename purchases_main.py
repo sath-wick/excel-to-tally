@@ -4,6 +4,13 @@ import pandas as pd
 from openpyxl import load_workbook
 
 from core.duplicate_filter import ExistingTransactionMatcher, JSON_DUPLICATE_COLUMNS
+from core.client_config import (
+    extract_bank_code,
+    get_default_client_name,
+    is_import_enabled,
+    resolve_duplicate_json_path,
+    resolve_rule_path,
+)
 from core.rule_engine import RuleEngine
 from utils.file_writer import safe_excel_write
 
@@ -18,9 +25,13 @@ if len(sys.argv) > 2:
 else:
     BANK_LEDGER = "494"
 
+if len(sys.argv) > 3:
+    CLIENT_NAME = sys.argv[3]
+else:
+    CLIENT_NAME = get_default_client_name()
+
 FINAL_OUTPUT = "./output/Purchases_Import.xlsx"
-DEFAULT_RULE_PATH = "./rules/description_rules_494.json"
-DUPLICATE_JSON_PATH = "./exports/Transactions.json"
+DUPLICATE_JSON_PATH = resolve_duplicate_json_path(CLIENT_NAME)
 
 REQUIRED_COLUMNS = [
     "NAME",
@@ -28,6 +39,30 @@ REQUIRED_COLUMNS = [
     "DATE",
     "GROSS AMT",
 ]
+
+COLUMN_ALIASES = {
+    "NAME": "NAME",
+    "PARTICULARS": "NAME",
+    "PARTICULAR": "NAME",
+    "SUPPLIER": "NAME",
+    "SUPPLIER NAME": "NAME",
+    "PARTY": "NAME",
+    "PARTY NAME": "NAME",
+    "INVOICE NO": "INVOICE NO",
+    "INVOICE NO_": "INVOICE NO",
+    "INVOICE NUMBER": "INVOICE NO",
+    "BILLNO": "INVOICE NO",
+    "BILL NO": "INVOICE NO",
+    "BILL NUMBER": "INVOICE NO",
+    "DATE": "DATE",
+    "BILL DATE": "DATE",
+    "INVOICE DATE": "DATE",
+    "GROSS AMT": "GROSS AMT",
+    "GROSS AMOUNT": "GROSS AMT",
+    "INVOICE VALUE": "GROSS AMT",
+    "BILL VALUE": "GROSS AMT",
+    "AMOUNT": "GROSS AMT",
+}
 
 IMPORT_COLUMNS = [
     "Voucher_Num",
@@ -59,16 +94,18 @@ class _PurchaseTransaction:
 
 
 def _normalize_columns(columns):
-    return {
-        col: " ".join(str(col).strip().upper().replace(".", "").split())
-        for col in columns
-    }
+    return {col: _canonical_column_name(col) for col in columns}
 
 
 def _normalize_header_cell(value):
     if pd.isna(value):
         return ""
     return " ".join(str(value).strip().upper().replace(".", "").split())
+
+
+def _canonical_column_name(value):
+    normalized = _normalize_header_cell(value)
+    return COLUMN_ALIASES.get(normalized, normalized)
 
 
 def _dataframe_from_detected_header(raw_df):
@@ -82,7 +119,7 @@ def _dataframe_from_detected_header(raw_df):
 
     for idx in range(scan_limit):
         row_values = raw_df.iloc[idx].tolist()
-        normalized = [_normalize_header_cell(v) for v in row_values]
+        normalized = [_canonical_column_name(v) for v in row_values]
         score = len(required_set.intersection(normalized))
         if score > best_score:
             best_score = score
@@ -131,40 +168,7 @@ def _format_date(value):
     return parsed.strftime("%d-%m-%Y")
 
 
-def _extract_bank_code(bank_ledger):
-    ledger_text = str(bank_ledger).strip()
-    digits_only = "".join(ch for ch in ledger_text if ch.isdigit())
-    return digits_only if digits_only else ledger_text
-
-
-def _resolve_rule_path(bank_ledger):
-    ledger_text = str(bank_ledger).strip()
-    digits_only = "".join(ch for ch in ledger_text if ch.isdigit())
-    slug = "_".join(ledger_text.lower().split())
-
-    if digits_only == "494":
-        return DEFAULT_RULE_PATH
-
-    candidates = []
-    if ledger_text:
-        candidates.append(ledger_text)
-    if slug and slug != ledger_text:
-        candidates.append(slug)
-    if digits_only and digits_only not in candidates:
-        candidates.append(digits_only)
-
-    for candidate in candidates:
-        bank_specific_rule_path = f"./rules/description_rules_{candidate}.json"
-        if os.path.exists(bank_specific_rule_path):
-            return bank_specific_rule_path
-
-    return DEFAULT_RULE_PATH
-
-
-def _read_purchases_table(purchases_file_path):
-    wb = load_workbook(purchases_file_path, data_only=True)
-    ws = wb.worksheets[0]
-
+def _read_worksheet_table(ws):
     if ws.tables:
         first_table_name = next(iter(ws.tables))
         table = ws.tables[first_table_name]
@@ -184,8 +188,42 @@ def _read_purchases_table(purchases_file_path):
         rows = table_data[1:]
         return pd.DataFrame(rows, columns=headers)
 
-    raw_df = pd.read_excel(purchases_file_path, sheet_name=0, header=None)
-    return _dataframe_from_detected_header(raw_df)
+    return None
+
+
+def _read_purchases_table(purchases_file_path):
+    wb = load_workbook(purchases_file_path, data_only=True)
+    sheet_frames = []
+
+    for ws in wb.worksheets:
+        table_df = _read_worksheet_table(ws)
+        if table_df is not None:
+            sheet_df = table_df
+        else:
+            raw_df = pd.read_excel(purchases_file_path, sheet_name=ws.title, header=None)
+            sheet_df = _dataframe_from_detected_header(raw_df)
+
+        if not sheet_df.empty:
+            sheet_frames.append(sheet_df)
+
+    if not sheet_frames:
+        return pd.DataFrame()
+
+    return pd.concat(sheet_frames, ignore_index=True, sort=False)
+
+
+def _coalesce_duplicate_columns(df):
+    if not df.columns.has_duplicates:
+        return df
+
+    output = pd.DataFrame(index=df.index)
+    for column in dict.fromkeys(df.columns):
+        same_name = df.loc[:, df.columns == column]
+        if same_name.shape[1] == 1:
+            output[column] = same_name.iloc[:, 0]
+        else:
+            output[column] = same_name.bfill(axis=1).iloc[:, 0]
+    return output
 
 
 def _resolve_party_ledger(name, rule_engine):
@@ -239,15 +277,16 @@ def _prepare_duplicate_df(rows):
     return output_df.reindex(columns=columns)
 
 
-def build_purchase_sheets(purchases_file_path, bank_ledger):
+def build_purchase_sheets(purchases_file_path, bank_ledger, client_name):
     df = _read_purchases_table(purchases_file_path)
     df = df.rename(columns=_normalize_columns(df.columns))
+    df = _coalesce_duplicate_columns(df)
 
     missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
     if missing:
         raise ValueError(f"Missing required columns: {', '.join(missing)}")
 
-    active_rule_path = _resolve_rule_path(bank_ledger)
+    active_rule_path = resolve_rule_path(bank_ledger, client_name)
     rule_engine = RuleEngine(active_rule_path)
 
     duplicate_matcher = None
@@ -316,13 +355,14 @@ def build_purchase_sheets(purchases_file_path, bank_ledger):
 
 
 def main():
-    if _extract_bank_code(BANK_LEDGER) != "494":
-        print(f"\nPurchases module is not implemented for bank '{BANK_LEDGER}' yet.")
+    if not is_import_enabled(CLIENT_NAME, "Purchases", BANK_LEDGER):
+        print(f"\nPurchases module is not configured for bank '{extract_bank_code(BANK_LEDGER)}' under {CLIENT_NAME}.")
         return
 
     import_df, unclassified_df, duplicate_df, rule_path = build_purchase_sheets(
         PURCHASES_FILE_PATH,
         BANK_LEDGER,
+        CLIENT_NAME,
     )
 
     def write_workbook():
@@ -334,6 +374,7 @@ def main():
     safe_excel_write(write_workbook, FINAL_OUTPUT)
 
     print("\nPurchases import workbook generated successfully.")
+    print(f"Client used       : {CLIENT_NAME}")
     print(f"Bank used         : {BANK_LEDGER}")
     print(f"Rules file used   : {rule_path}")
     print(f"Imported rows     : {len(import_df)}")

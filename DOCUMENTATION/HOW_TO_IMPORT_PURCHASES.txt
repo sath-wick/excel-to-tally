@@ -1,0 +1,421 @@
+================================================================================
+HOW TO IMPORT PURCHASES
+================================================================================
+
+This guide explains how to import purchase entries into the Tally import
+framework.
+
+It is written for users and stakeholders. You do not need programming knowledge
+to follow these steps.
+
+
+================================================================================
+1. WHAT PURCHASES IMPORT DOES
+================================================================================
+
+Purchases import is used when you have a Purchases Excel file and want to
+prepare Tally-ready entries from it.
+
+The system reads the purchase file, checks the supplier names, prepares the
+entries, and creates an output Excel file.
+
+The output file can then be reviewed before it is imported into Tally.
+
+
+================================================================================
+2. BEFORE YOU START
+================================================================================
+
+Before importing purchases, make sure you have:
+
+1. The Purchases Excel file.
+
+2. The correct company selected in the application.
+
+3. The correct bank account selected in the application.
+
+4. Supplier names already added in the company's rules file.
+
+5. The Tally export file, if available, for duplicate checking.
+
+
+================================================================================
+3. REQUIRED PURCHASES EXCEL FORMAT
+================================================================================
+
+The Purchases Excel file must contain these columns:
+
+    NAME
+    INVOICE NO
+    DATE
+    GROSS AMT
+
+What each column means:
+
+- NAME
+  Supplier or party name.
+
+- INVOICE NO
+  Supplier invoice number.
+
+- DATE
+  Invoice date.
+
+- GROSS AMT
+  Total purchase amount.
+
+Important:
+
+- The column names should be clear and match the names above.
+- The system reads the first sheet in the Excel file.
+- The date should be a proper Excel date or a readable date.
+- The gross amount should be a number.
+- Blank names, invalid dates, and zero or negative amounts may not be imported.
+
+
+================================================================================
+4. HOW SUPPLIER NAMES ARE MATCHED
+================================================================================
+
+The system checks the supplier name from the NAME column and tries to match it
+with the company's purchase rules.
+
+Example:
+
+If the Purchases Excel file has:
+
+    ABC TRADERS
+
+The company rules should have a matching entry like:
+
+[
+  {
+    "pattern": [
+      "ABC TRADERS"
+    ],
+    "ledger": "ABC Traders",
+    "priority": 100
+  }
+]
+
+What this means:
+
+- When the system sees "ABC TRADERS", it uses the Tally ledger "ABC Traders".
+- The ledger name must match the ledger in Tally exactly.
+
+
+================================================================================
+5. WHERE PURCHASE RULES ARE KEPT
+================================================================================
+
+Purchase matching rules are kept in the company's rules folder.
+
+Example:
+
+    rules/Arjun Rao/description_rules_494.json
+    rules/NSB/description_rules_5565.json
+    rules/D Raju/description_rules_7960.json
+
+Each bank has its own rules file.
+
+When you select a company and bank in the application, the system uses the rules
+file connected to that selected bank.
+
+
+================================================================================
+6. HOW TO RUN PURCHASES IMPORT
+================================================================================
+
+Open the application:
+
+    application.bat
+
+Then follow these steps:
+
+1. Select the company.
+
+2. Select:
+
+       Purchases
+
+3. Select the bank group.
+
+   Example:
+
+       DBS
+       HDFC
+       SBI
+       Kotak
+
+4. Select the bank account.
+
+   Example:
+
+       494
+       KOTAK 5565
+       DBS 7960
+
+5. Select the Purchases Excel file.
+
+6. Wait for the process to complete.
+
+7. Open the output file from:
+
+       output/Purchases_Import.xlsx
+
+
+================================================================================
+7. WHAT THE OUTPUT FILE CONTAINS
+================================================================================
+
+The purchases output file is:
+
+    output/Purchases_Import.xlsx
+
+It normally contains these sheets:
+
+1. Import
+
+   These are the purchase entries prepared for Tally.
+
+2. Unclassified
+
+   These are entries the system could not match with a Tally ledger.
+
+3. Duplicate
+
+   These are entries that may already exist in Tally.
+
+
+================================================================================
+8. HOW TO REVIEW THE IMPORT SHEET
+================================================================================
+
+Open:
+
+    output/Purchases_Import.xlsx
+
+Then open the sheet named:
+
+    Import
+
+Check the following:
+
+1. Date is correct.
+2. Supplier ledger is correct.
+3. Purchase amount is correct.
+4. Invoice number is correct.
+5. The entry looks ready for Tally.
+
+If everything is correct, this sheet can be used for Tally import.
+
+
+================================================================================
+9. HOW TO REVIEW THE UNCLASSIFIED SHEET
+================================================================================
+
+The Unclassified sheet is very important.
+
+It shows purchases that could not be prepared because the supplier name was not
+matched with a Tally ledger.
+
+Common reason:
+
+    No matching supplier rule was found.
+
+Example:
+
+If Unclassified shows:
+
+    ABC TRADERS
+
+And the correct Tally ledger is:
+
+    ABC Traders
+
+Then add a rule for ABC TRADERS in the correct company rules file.
+
+
+================================================================================
+10. HOW TO ADD A MISSING SUPPLIER RULE
+================================================================================
+
+Open the rules file for the selected company and bank.
+
+Example:
+
+    rules/NSB/description_rules_5565.json
+
+Add the supplier name and Tally ledger.
+
+Example:
+
+[
+  {
+    "pattern": [
+      "ABC TRADERS"
+    ],
+    "ledger": "ABC Traders",
+    "priority": 100
+  }
+]
+
+If the file already has other rules, add the new rule inside the same list.
+
+Example with multiple suppliers:
+
+[
+  {
+    "pattern": [
+      "ABC TRADERS"
+    ],
+    "ledger": "ABC Traders",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "XYZ AGENCIES"
+    ],
+    "ledger": "XYZ Agencies",
+    "priority": 100
+  }
+]
+
+After adding the rule:
+
+1. Save the file.
+2. Run Purchases import again.
+3. Check the Unclassified sheet again.
+4. Repeat until the important entries are classified correctly.
+
+
+================================================================================
+11. HOW TO REVIEW THE DUPLICATE SHEET
+================================================================================
+
+The Duplicate sheet shows entries that may already exist in Tally.
+
+This depends on the Tally export file being available for that company.
+
+Example location:
+
+    exports/NSB/Transactions.json
+    exports/Arjun Rao/Transactions.json
+
+If the Tally export file is available, the system compares the purchase entries
+against existing Tally entries.
+
+If an entry is shown as duplicate:
+
+1. Check whether the entry is already present in Tally.
+2. If it is already present, do not import it again.
+3. If it is not present, review the details carefully before deciding what to do.
+
+
+================================================================================
+12. COMMON ISSUES AND SIMPLE FIXES
+================================================================================
+
+Issue:
+The Purchases option says it is not configured for the selected bank.
+
+Fix:
+The selected bank may not be enabled for Purchases. Check the company setup in:
+
+    config/clients.json
+
+
+Issue:
+The output file is created, but the Import sheet is empty.
+
+Fix:
+Check the Unclassified sheet. Supplier names may not be added to the rules file.
+
+
+Issue:
+Some suppliers are going to Unclassified.
+
+Fix:
+Add those supplier names to the correct company rules file.
+
+
+Issue:
+The wrong Tally ledger is used.
+
+Fix:
+Correct the ledger name in the rules file. The ledger name must match Tally.
+
+
+Issue:
+The system cannot read the purchase file properly.
+
+Fix:
+Check that the Purchases Excel file has these columns:
+
+    NAME
+    INVOICE NO
+    DATE
+    GROSS AMT
+
+
+Issue:
+Duplicate checking is not happening.
+
+Fix:
+Make sure the Tally export file is available for the company.
+
+Example:
+
+    exports/<Company Name>/Transactions.json
+
+
+================================================================================
+13. FINAL CHECKLIST BEFORE IMPORTING INTO TALLY
+================================================================================
+
+Use this checklist after running Purchases import:
+
+[ ] Correct company was selected.
+[ ] Correct bank was selected.
+[ ] Correct Purchases Excel file was selected.
+[ ] output/Purchases_Import.xlsx was created.
+[ ] Import sheet was reviewed.
+[ ] Supplier ledgers were checked.
+[ ] Amounts were checked.
+[ ] Invoice numbers were checked.
+[ ] Unclassified sheet was reviewed.
+[ ] Missing supplier rules were added, if needed.
+[ ] Duplicate sheet was reviewed.
+[ ] Final Import sheet is approved for Tally import.
+
+
+================================================================================
+14. SIMPLE EXAMPLE
+================================================================================
+
+Purchases Excel row:
+
+    NAME          : ABC TRADERS
+    INVOICE NO    : INV-101
+    DATE          : 01-04-2026
+    GROSS AMT     : 5000
+
+Rule added in the company rules file:
+
+[
+  {
+    "pattern": [
+      "ABC TRADERS"
+    ],
+    "ledger": "ABC Traders",
+    "priority": 100
+  }
+]
+
+Expected result:
+
+- The purchase entry appears in the Import sheet.
+- The supplier ledger is ABC Traders.
+- The amount is 5000.
+- The invoice number is INV-101.
+

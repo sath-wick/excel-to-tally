@@ -1,0 +1,25 @@
+[
+    {
+        "pattern": [
+            "Locker"
+        ],
+        "ledger": "Locker Rent",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "CREDIT INTEREST"
+        ],
+        "ledger": "Bank Interest",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "Deposit Closure",
+            "Xfer. due to closure",
+            "DD/CC ISSUED"
+        ],
+        "ledger": "Security Deposits",
+        "priority": 100
+    }
+]

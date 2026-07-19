@@ -8,6 +8,13 @@ from core.ignore_filter import split_ignored_descriptions
 from core.transaction import Transaction
 from core.rule_engine import RuleEngine
 from core.builders import ContraBuilder, PaymentBuilder, ReceiptBuilder
+from core.client_config import (
+    get_default_client_name,
+    resolve_bank_account,
+    resolve_duplicate_json_path,
+    resolve_ignore_json_path,
+    resolve_rule_path,
+)
 from core.engine import VoucherEngine
 from utils.file_writer import safe_excel_write
 
@@ -23,35 +30,18 @@ if len(sys.argv) > 2:
 else:
     BANK_LEDGER = "494"
 
-DUPLICATE_JSON_PATH = "./exports/Transactions.json"
-IGNORE_JSON_PATH = "./rules/ignored_descriptions.json"
+if len(sys.argv) > 3:
+    CLIENT_NAME = sys.argv[3]
+else:
+    CLIENT_NAME = get_default_client_name()
+
+BANK_ACCOUNT = resolve_bank_account(CLIENT_NAME, BANK_LEDGER)
+TALLY_BANK_LEDGER = BANK_ACCOUNT.get("ledger", BANK_LEDGER)
+
+DUPLICATE_JSON_PATH = resolve_duplicate_json_path(CLIENT_NAME)
+IGNORE_JSON_PATH = resolve_ignore_json_path(CLIENT_NAME)
 
 FINAL_OUTPUT = "./output/Statement_Import.xlsx"
-RULE_PATH = "./rules/description_rules_494.json"
-
-
-def resolve_rule_path(bank_ledger):
-    ledger_text = str(bank_ledger).strip()
-    digits_only = "".join(ch for ch in ledger_text if ch.isdigit())
-    slug = "_".join(ledger_text.lower().split())
-
-    if digits_only == "494":
-        return RULE_PATH
-
-    candidates = []
-    if ledger_text:
-        candidates.append(ledger_text)
-    if slug and slug != ledger_text:
-        candidates.append(slug)
-    if digits_only and digits_only not in candidates:
-        candidates.append(digits_only)
-
-    for candidate in candidates:
-        bank_specific_rule_path = f"./rules/description_rules_{candidate}.json"
-        if os.path.exists(bank_specific_rule_path):
-            return bank_specific_rule_path
-
-    return RULE_PATH
 
 
 def confirm_step(message):
@@ -115,12 +105,22 @@ def with_json_duplicate_columns(df):
     return output
 
 
+def write_bank_statement_only(statement_df):
+    def write_statement_workbook():
+        with pd.ExcelWriter(FINAL_OUTPUT, engine="openpyxl") as writer:
+            statement_df.to_excel(writer, sheet_name="Bank statement", index=False)
+
+    safe_excel_write(write_statement_workbook, FINAL_OUTPUT)
+    print(f"\nBank statement workbook generated: {FINAL_OUTPUT}")
+
+
 def main():
     statement_df = extract_bank_statement(PDF_PATH, bank_ledger=BANK_LEDGER)
     print("\nBank statement extracted successfully.")
 
     if not confirm_step("Proceed with duplicate filtering and voucher generation?"):
-        print("\nProcess stopped by user.")
+        write_bank_statement_only(statement_df)
+        print("\nVoucher generation and duplicate filtering skipped by user.")
         return
 
     filtered_statement_df = statement_df.copy()
@@ -148,14 +148,15 @@ def main():
 
     transactions = [Transaction(row) for _, row in filtered_statement_df.iterrows()]
 
-    active_rule_path = resolve_rule_path(BANK_LEDGER)
+    active_rule_path = resolve_rule_path(BANK_LEDGER, CLIENT_NAME)
+    print(f"Client: {CLIENT_NAME}")
     print(f"Using rules file: {active_rule_path}")
     rule_engine = RuleEngine(active_rule_path)
 
     builder_registry = {
-        "Contra": ContraBuilder(BANK_LEDGER),
-        "Payment": PaymentBuilder(BANK_LEDGER),
-        "Receipt": ReceiptBuilder(BANK_LEDGER),
+        "Contra": ContraBuilder(TALLY_BANK_LEDGER),
+        "Payment": PaymentBuilder(TALLY_BANK_LEDGER),
+        "Receipt": ReceiptBuilder(TALLY_BANK_LEDGER),
     }
 
     duplicate_json_path = DUPLICATE_JSON_PATH if os.path.exists(DUPLICATE_JSON_PATH) else None

@@ -5,35 +5,12 @@ import msvcrt
 import tkinter as tk
 from tkinter import filedialog
 
-
-BANK_CATEGORIES = {
-    "YES": [
-        "YES 1060",
-        "YES 2085",
-        "494"
-    ],
-    "SBI": [
-        "SBI 4452",
-        "SBI 9382"
-    ],
-    "Kotak": [
-        "Kotak 2449",
-        "KOTAK 2755",
-        "Kotak 44000",
-        "KOTAK 555",
-        "KOTAK 8113",
-        "KOTAK 9699",
-        "Kotk 11053"
-    ],
-    "DBS": [
-        "DBS 232",
-        "DBS361"
-    ],
-    "Others": [
-        "Bank 3332",
-        "Cash"
-    ]
-}
+from core.client_config import (
+    extract_bank_code,
+    get_client_bank_categories,
+    get_client_names,
+    is_import_enabled,
+)
 
 BACK = "__BACK__"
 
@@ -115,16 +92,23 @@ def select_from_list(options, title, allow_back=False):
     return None
 
 
-def extract_bank_code(bank_ledger):
-    ledger_text = str(bank_ledger).strip()
-    digits_only = "".join(ch for ch in ledger_text if ch.isdigit())
-    return digits_only if digits_only else ledger_text
+def select_client():
+    clients = get_client_names()
+    if not clients:
+        raise ValueError("No clients are configured in ./config/clients.json")
+
+    if len(clients) == 1:
+        return clients[0]
+
+    return select_from_list(clients, "SELECT CLIENT")
 
 
-def run_excel_import_flow(module_name, script_name, file_selector):
+def run_excel_import_flow(client_name, module_name, script_name, file_selector):
+    bank_categories = get_client_bank_categories(client_name)
+
     while True:
         category = select_from_list(
-            list(BANK_CATEGORIES.keys()),
+            list(bank_categories.keys()),
             "SELECT BANK CATEGORY",
             allow_back=True
         )
@@ -134,7 +118,7 @@ def run_excel_import_flow(module_name, script_name, file_selector):
 
         while True:
             bank_ledger = select_from_list(
-                BANK_CATEGORIES[category],
+                bank_categories[category],
                 "SELECT BANK",
                 allow_back=True
             )
@@ -142,8 +126,9 @@ def run_excel_import_flow(module_name, script_name, file_selector):
             if bank_ledger == BACK:
                 break
 
-            if extract_bank_code(bank_ledger) != "494":
-                print(f"\n{module_name} is currently available only for bank 494.")
+            if not is_import_enabled(client_name, module_name, bank_ledger):
+                bank_code = extract_bank_code(bank_ledger)
+                print(f"\n{module_name} is not configured for bank '{bank_code}' under {client_name}.")
                 print("Press any key to choose another bank...")
                 msvcrt.getch()
                 continue
@@ -155,19 +140,23 @@ def run_excel_import_flow(module_name, script_name, file_selector):
                 print("\nNo file selected. Exiting.")
                 sys.exit()
 
-            print(f"\nSelected Bank: {bank_ledger}")
+            print(f"\nSelected Client: {client_name}")
+            print(f"Selected Bank: {bank_ledger}")
             print(f"Selected {module_name} File: {file_path}")
             print("\nProcessing...\n")
-            subprocess.run(["python", script_name, file_path, bank_ledger])
+            subprocess.run(["python", script_name, file_path, bank_ledger, client_name])
             return True
 
 
 def main():
     while True:
+        client_name = select_client()
+
         clear()
         print("============================================")
         print("         TALLY IMPORT GENERATOR")
         print("============================================\n")
+        print(f"Client: {client_name}\n")
 
         print("Select Import Type:")
         print("1. Sales")
@@ -178,18 +167,20 @@ def main():
         choice = read_menu_choice(3)
 
         if choice == 1:
-            if run_excel_import_flow("Sales", "sales_main.py", select_sales_file):
+            if run_excel_import_flow(client_name, "Sales", "sales_main.py", select_sales_file):
                 return
             continue
 
         if choice == 2:
-            if run_excel_import_flow("Purchases", "purchases_main.py", select_purchases_file):
+            if run_excel_import_flow(client_name, "Purchases", "purchases_main.py", select_purchases_file):
                 return
             continue
 
+        bank_categories = get_client_bank_categories(client_name)
+
         while True:
             category = select_from_list(
-                list(BANK_CATEGORIES.keys()),
+                list(bank_categories.keys()),
                 "SELECT BANK CATEGORY",
                 allow_back=True
             )
@@ -199,7 +190,7 @@ def main():
 
             while True:
                 bank_ledger = select_from_list(
-                    BANK_CATEGORIES[category],
+                    bank_categories[category],
                     "SELECT BANK",
                     allow_back=True
                 )
@@ -214,10 +205,11 @@ def main():
                     print("\nNo file selected. Exiting.")
                     sys.exit()
 
-                print(f"\nSelected Bank: {bank_ledger}")
+                print(f"\nSelected Client: {client_name}")
+                print(f"Selected Bank: {bank_ledger}")
                 print(f"Selected File: {file_path}")
                 print("\nProcessing...\n")
-                subprocess.run(["python", "main.py", file_path, bank_ledger])
+                subprocess.run(["python", "main.py", file_path, bank_ledger, client_name])
                 return
 
 

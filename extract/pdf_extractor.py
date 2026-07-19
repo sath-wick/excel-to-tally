@@ -251,6 +251,265 @@ def parse_text_transaction_line(line):
     }
 
 
+def is_dbs_bank_statement(bank_ledger):
+    if bank_ledger is None:
+        return False
+    return "dbs" in str(bank_ledger).strip().lower()
+
+
+def is_kotak_bank_statement(bank_ledger):
+    if bank_ledger is None:
+        return False
+    return "kotak" in str(bank_ledger).strip().lower()
+
+
+def parse_dbs_amount(value):
+    return parse_amount(value)
+
+
+def amounts_equal(left, right):
+    return round(abs(left - right), 2) == 0
+
+
+def infer_dbs_amount_side(amount, balance, previous_balance):
+    if previous_balance is None:
+        return "", ""
+
+    if amounts_equal(previous_balance - amount, balance):
+        return amount, ""
+
+    if amounts_equal(previous_balance + amount, balance):
+        return "", amount
+
+    return amount, ""
+
+
+def parse_dbs_transaction_start(line, previous_balance):
+    date_regex = r"\d{2}-[A-Za-z]{3}-\d{4}"
+    amount_regex = r"\d{1,3}(?:,\d{2,3})*\.\d{2}|\d+\.\d{2}"
+    pattern = re.compile(
+        rf"^({date_regex})\s+({date_regex})\s+(.+?)\s+({amount_regex})(?:\s+({amount_regex}))?\s*$",
+        re.IGNORECASE
+    )
+
+    match = pattern.match(clean_text(line))
+    if not match:
+        return None
+
+    transaction_date = match.group(1)
+    value_date = match.group(2)
+    description = clean_text(match.group(3))
+    first_amount = parse_dbs_amount(match.group(4))
+    second_amount = parse_dbs_amount(match.group(5)) if match.group(5) else 0.0
+
+    if second_amount > 0:
+        balance = second_amount
+        withdrawal, deposit = infer_dbs_amount_side(first_amount, balance, previous_balance)
+    else:
+        balance = first_amount
+        withdrawal, deposit = "", ""
+
+    description, reference = split_description_reference(description)
+
+    return {
+        "Transaction Date": transaction_date,
+        "Value Date": value_date,
+        "Description": description,
+        "Reference Number": reference,
+        "Withdrawals": withdrawal,
+        "Deposits": deposit,
+        "Running Balance": balance,
+    }
+
+
+def extract_dbs_text_statement(pdf_path):
+    try:
+        import pdfplumber
+    except ImportError:
+        print("pdfplumber is not installed. DBS text fallback unavailable.")
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    transactions = []
+    current_transaction = None
+    previous_balance = None
+    in_savings_statement = False
+    date_start_pattern = re.compile(r"^\d{2}-[A-Za-z]{3}-\d{4}\s+\d{2}-[A-Za-z]{3}-\d{4}\s+", re.IGNORECASE)
+    opening_balance_pattern = re.compile(r"^Opening Balance\s+([\d,]+\.\d{2})$", re.IGNORECASE)
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text() or ""
+
+            for raw_line in text.splitlines():
+                line = clean_text(raw_line)
+
+                if line == "" or is_header_line(line):
+                    continue
+
+                if "Account Type: SAVINGS" in line:
+                    in_savings_statement = True
+                    continue
+
+                if not in_savings_statement:
+                    continue
+
+                if line.startswith("Closing Balance"):
+                    if current_transaction:
+                        transactions.append(current_transaction)
+                        current_transaction = None
+                    in_savings_statement = False
+                    continue
+
+                opening_match = opening_balance_pattern.match(line)
+                if opening_match:
+                    previous_balance = parse_dbs_amount(opening_match.group(1))
+                    continue
+
+                if date_start_pattern.match(line):
+                    parsed = parse_dbs_transaction_start(line, previous_balance)
+                    if not parsed:
+                        continue
+
+                    if current_transaction:
+                        transactions.append(current_transaction)
+
+                    current_transaction = parsed
+                    previous_balance = parse_dbs_amount(parsed["Running Balance"])
+                    continue
+
+                if current_transaction:
+                    current_transaction["Description"] = clean_text(
+                        f"{current_transaction['Description']} {line}"
+                    )
+                    current_transaction["Description"], current_transaction["Reference Number"] = split_description_reference(
+                        current_transaction["Description"]
+                    )
+
+    if current_transaction:
+        transactions.append(current_transaction)
+
+    if not transactions:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    df = pd.DataFrame(transactions)
+    for column in STANDARD_COLUMNS:
+        if column not in df.columns:
+            df[column] = ""
+
+    df["Description"] = df["Description"].apply(clean_text)
+    return df[STANDARD_COLUMNS]
+
+
+def parse_kotak_transaction_start(line, previous_balance):
+    date_regex = r"\d{1,2}\s+[A-Za-z]{3}\s+20\d{2}"
+    amount_regex = r"\d{1,3}(?:,\d{2,3})*\.\d{2}|\d+\.\d{2}"
+    pattern = re.compile(
+        rf"^\d+\s+({date_regex})\s+(.+?)\s+({amount_regex})\s+({amount_regex})\s*$",
+        re.IGNORECASE
+    )
+
+    match = pattern.match(clean_text(line))
+    if not match:
+        return None
+
+    transaction_date = match.group(1)
+    description = clean_text(match.group(2))
+    amount = parse_amount(match.group(3))
+    balance = parse_amount(match.group(4))
+    withdrawal, deposit = infer_dbs_amount_side(amount, balance, previous_balance)
+    description, reference = split_description_reference(description)
+
+    return {
+        "Transaction Date": transaction_date,
+        "Value Date": transaction_date,
+        "Description": description,
+        "Reference Number": reference,
+        "Withdrawals": withdrawal,
+        "Deposits": deposit,
+        "Running Balance": balance,
+    }
+
+
+def extract_kotak_text_statement(pdf_path):
+    try:
+        import pdfplumber
+    except ImportError:
+        print("pdfplumber is not installed. Kotak text fallback unavailable.")
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    transactions = []
+    current_transaction = None
+    previous_balance = None
+    in_transaction_section = False
+    transaction_start_pattern = re.compile(r"^\d+\s+\d{1,2}\s+[A-Za-z]{3}\s+20\d{2}\s+", re.IGNORECASE)
+    opening_balance_pattern = re.compile(r"^-\s+-\s+Opening Balance\s+-\s+-\s+-\s+([\d,]+\.\d{2})$", re.IGNORECASE)
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text() or ""
+
+            for raw_line in text.splitlines():
+                line = clean_text(raw_line)
+
+                if line == "":
+                    continue
+
+                if "Current Account Transactions" in line:
+                    in_transaction_section = True
+                    continue
+
+                if not in_transaction_section:
+                    continue
+
+                if (
+                    line.startswith("# Date Description") or
+                    line.startswith("Statement Generated") or
+                    line.startswith("Account Statement") or
+                    line.startswith("Account No.") or
+                    line == "NSB TRADERS"
+                ):
+                    continue
+
+                opening_match = opening_balance_pattern.match(line)
+                if opening_match:
+                    previous_balance = parse_amount(opening_match.group(1))
+                    continue
+
+                if transaction_start_pattern.match(line):
+                    parsed = parse_kotak_transaction_start(line, previous_balance)
+                    if not parsed:
+                        continue
+
+                    if current_transaction:
+                        transactions.append(current_transaction)
+
+                    current_transaction = parsed
+                    previous_balance = parse_amount(parsed["Running Balance"])
+                    continue
+
+                if current_transaction:
+                    current_transaction["Description"] = clean_text(
+                        f"{current_transaction['Description']} {line}"
+                    )
+                    current_transaction["Description"], current_transaction["Reference Number"] = split_description_reference(
+                        current_transaction["Description"]
+                    )
+
+    if current_transaction:
+        transactions.append(current_transaction)
+
+    if not transactions:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    df = pd.DataFrame(transactions)
+    for column in STANDARD_COLUMNS:
+        if column not in df.columns:
+            df[column] = ""
+
+    df["Description"] = df["Description"].apply(clean_text)
+    return df[STANDARD_COLUMNS]
+
+
 def extract_text_statement(pdf_path):
     try:
         import pdfplumber
@@ -412,23 +671,39 @@ def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
     final_df = pd.DataFrame()
     accepted_tables = 0
     ignored_tables = 0
+    extraction_method = "table"
 
     sbi_statement = is_sbi_bank_statement(bank_ledger)
+    dbs_statement = is_dbs_bank_statement(bank_ledger)
+    kotak_statement = is_kotak_bank_statement(bank_ledger)
 
     if sbi_statement:
         print("SBI detected: using text-based row extraction by default...")
         final_df = extract_text_statement(pdf_path)
         final_df = move_value_date_suffix_to_description(final_df)
+        extraction_method = "sbi_text"
+
+    if dbs_statement:
+        print("DBS detected: using text-table row extraction by default...")
+        final_df = extract_dbs_text_statement(pdf_path)
+        extraction_method = "dbs_text_table"
+
+    if kotak_statement:
+        print("Kotak detected: using text-based row extraction by default...")
+        final_df = extract_kotak_text_statement(pdf_path)
+        extraction_method = "kotak_text"
 
     if not has_valid_transactions(final_df):
         final_df, accepted_tables, ignored_tables = extract_table_statement(pdf_path)
         final_df = move_value_date_suffix_to_description(final_df)
+        extraction_method = "table"
 
     if not has_valid_transactions(final_df):
-        if not sbi_statement:
+        if not sbi_statement and not dbs_statement and not kotak_statement:
             print("Switching to text-based extraction (pdfplumber fallback)...")
             final_df = extract_text_statement(pdf_path)
             final_df = move_value_date_suffix_to_description(final_df)
+            extraction_method = "text"
 
     if not has_valid_transactions(final_df):
         raise ValueError("No valid tables found in PDF. Extraction aborted.")
@@ -460,8 +735,16 @@ def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
 
         wb.save(output_file)
 
-    print(f"Tables accepted: {accepted_tables}")
-    print(f"Tables ignored : {ignored_tables}")
+    if extraction_method in {"dbs_text_table", "kotak_text"}:
+        if extraction_method == "dbs_text_table":
+            print("Extraction method: DBS text-table parser")
+        else:
+            print("Extraction method: Kotak text parser")
+        print(f"Transaction rows extracted: {len(final_df)}")
+    else:
+        print(f"Tables accepted: {accepted_tables}")
+        print(f"Tables ignored : {ignored_tables}")
+
     print("Bank statement extraction completed.")
 
     return final_df

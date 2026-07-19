@@ -4,6 +4,16 @@ import pandas as pd
 from openpyxl import load_workbook
 
 from core.duplicate_filter import ExistingTransactionMatcher, JSON_DUPLICATE_COLUMNS
+from core.client_config import (
+    extract_bank_code,
+    get_default_client_name,
+    is_import_enabled,
+    resolve_duplicate_json_path,
+    resolve_module_dr_ledger,
+    resolve_module_setting,
+    resolve_rule_path,
+)
+from core.rule_engine import RuleEngine
 from utils.file_writer import safe_excel_write
 
 
@@ -17,8 +27,16 @@ if len(sys.argv) > 2:
 else:
     BANK_LEDGER = "494"
 
+if len(sys.argv) > 3:
+    CLIENT_NAME = sys.argv[3]
+else:
+    CLIENT_NAME = get_default_client_name()
+
 FINAL_OUTPUT = "./output/Sales_Import.xlsx"
-DUPLICATE_JSON_PATH = "./exports/Transactions.json"
+DUPLICATE_JSON_PATH = resolve_duplicate_json_path(CLIENT_NAME)
+SALES_CR_LEDGER = resolve_module_setting(CLIENT_NAME, "Sales", "cr_ledger", "Contract Receipts")
+SALES_DR_LEDGER = resolve_module_dr_ledger(CLIENT_NAME, "Sales", "S.C.Rly")
+SALES_DR_LEDGER_FROM_RULES = resolve_module_setting(CLIENT_NAME, "Sales", "dr_ledger_from_rules", False)
 
 REQUIRED_COLUMNS = [
     "DATE",
@@ -51,6 +69,11 @@ UNCLASSIFIED_COLUMNS = [
 ]
 
 
+class _SalesTransaction:
+    def __init__(self, description):
+        self.description = description
+
+
 def _normalize_columns(columns):
     return {
         col: " ".join(str(col).strip().upper().replace(".", "").split())
@@ -79,12 +102,6 @@ def _format_date(value):
     return parsed.strftime("%d-%m-%Y")
 
 
-def _extract_bank_code(bank_ledger):
-    ledger_text = str(bank_ledger).strip()
-    digits_only = "".join(ch for ch in ledger_text if ch.isdigit())
-    return digits_only if digits_only else ledger_text
-
-
 def _read_sales_table(sales_file_path):
     wb = load_workbook(sales_file_path, data_only=True)
     ws = wb.worksheets[0]
@@ -108,6 +125,16 @@ def _read_sales_table(sales_file_path):
     headers = [str(col).strip() if col is not None else "" for col in table_data[0]]
     rows = table_data[1:]
     return pd.DataFrame(rows, columns=headers)
+
+
+def _resolve_party_ledger(description, rule_engine):
+    txn = _SalesTransaction(description)
+    rule = rule_engine.match(txn)
+    if rule:
+        ledger = rule.get("ledger") or rule.get("payment_ledger")
+        if ledger:
+            return ledger, True
+    return "", False
 
 
 def _empty_import_df():
@@ -165,6 +192,10 @@ def build_sales_sheets(sales_file_path):
     if os.path.exists(DUPLICATE_JSON_PATH):
         duplicate_matcher = ExistingTransactionMatcher(DUPLICATE_JSON_PATH)
 
+    rule_engine = None
+    if SALES_DR_LEDGER_FROM_RULES:
+        rule_engine = RuleEngine(resolve_rule_path(BANK_LEDGER, CLIENT_NAME))
+
     import_rows = []
     unclassified_rows = []
     duplicate_rows = []
@@ -211,15 +242,30 @@ def build_sales_sheets(sales_file_path):
             )
             continue
 
+        dr_ledger = SALES_DR_LEDGER
+        if rule_engine:
+            dr_ledger, matched = _resolve_party_ledger(description, rule_engine)
+            if not matched:
+                unclassified_rows.append(
+                    {
+                        "Particulars": description,
+                        "Invoice No.": invoice_no,
+                        "Date": date,
+                        "Gross Value": amount,
+                        "Reason": "No matching description rule",
+                    }
+                )
+                continue
+
         voucher_row = {
             "Voucher_Type": "Journal",
             "Date": date,
             "Description": description,
             "Narration": invoice_no,
-            "Cr_Ledger": "Contract Receipts",
+            "Cr_Ledger": SALES_CR_LEDGER,
             "Amount": amount,
             "Cr": "CR",
-            "Dr_Ledger": "S.C.Rly",
+            "Dr_Ledger": dr_ledger,
             "Dr_Amount": amount,
             "Dr": "DR",
         }
@@ -246,8 +292,8 @@ def build_sales_sheets(sales_file_path):
 
 
 def main():
-    if _extract_bank_code(BANK_LEDGER) != "494":
-        print(f"\nSales module is not implemented for bank '{BANK_LEDGER}' yet.")
+    if not is_import_enabled(CLIENT_NAME, "Sales", BANK_LEDGER):
+        print(f"\nSales module is not configured for bank '{extract_bank_code(BANK_LEDGER)}' under {CLIENT_NAME}.")
         return
 
     import_df, unclassified_df, duplicate_df = build_sales_sheets(SALES_FILE_PATH)
@@ -261,6 +307,7 @@ def main():
     safe_excel_write(write_workbook, FINAL_OUTPUT)
 
     print("\nSales import workbook generated successfully.")
+    print(f"Client used       : {CLIENT_NAME}")
     print(f"Bank used         : {BANK_LEDGER}")
     print(f"Imported rows     : {len(import_df)}")
     print(f"Unclassified rows : {len(unclassified_df)}")

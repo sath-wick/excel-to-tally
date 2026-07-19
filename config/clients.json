@@ -1,0 +1,99 @@
+{
+  "default_client": "Arjun Rao",
+  "clients": {
+    "Arjun Rao": {
+      "duplicate_json_path": "./exports/Arjun Rao/Transactions.json",
+      "ignore_json_path": "./rules/Arjun Rao/ignored_descriptions.json",
+      "bank_categories": {
+        "YES": [
+          "YES 1060",
+          "YES 2085",
+          "494"
+        ],
+        "SBI": [
+          "SBI 4452",
+          "SBI 9382"
+        ],
+        "Kotak": [
+          "Kotak 2449",
+          "KOTAK 2755",
+          "Kotak 44000",
+          "KOTAK 555",
+          "KOTAK 8113",
+          "KOTAK 9699",
+          "Kotk 11053"
+        ],
+        "DBS": [
+          "DBS 232",
+          "DBS361"
+        ],
+        "Others": [
+          "Bank 3332",
+          "Cash"
+        ]
+      },
+      "banks": {
+        "YES 2085": {
+          "ledger": "YES 2085",
+          "rule_path": "./rules/Arjun Rao/description_rules_2085.json"
+        },
+        "494": {
+          "ledger": "494",
+          "rule_path": "./rules/Arjun Rao/description_rules_494.json"
+        },
+        "SBI 9382": {
+          "ledger": "SBI 9382",
+          "rule_path": "./rules/Arjun Rao/description_rules_9382.json"
+        },
+        "Bank 3332": {
+          "ledger": "Bank 3332",
+          "rule_path": "./rules/Arjun Rao/description_rules_3332.json"
+        }
+      },
+      "sales": {
+        "enabled_bank_codes": [
+          "494"
+        ]
+      },
+      "purchases": {
+        "enabled_bank_codes": [
+          "494"
+        ]
+      }
+    },
+    "D Raju": {
+      "duplicate_json_path": "./exports/D Raju/Transactions.json",
+      "ignore_json_path": "./rules/D Raju/ignored_descriptions.json",
+      "bank_categories": {
+        "DBS": [
+          "DBS 7960"
+        ]
+      },
+      "banks": {
+        "DBS 7960": {
+          "ledger": "",
+          "rule_path": "./rules/D Raju/description_rules_7960.json"
+        }
+      }
+    },
+    "NSB Traders": {
+      "duplicate_json_path": "./exports/NSB/Transactions.json",
+      "ignore_json_path": "./rules/NSB/ignored_descriptions.json",
+      "bank_categories": {
+        "Kotak": [
+          "Kotak 5565"
+        ]
+      },
+      "banks": {
+        "Kotak 5565": {
+          "ledger": "Kotak 5565",
+          "rule_path": "./rules/NSB/description_rules_5565.json"
+        }
+      },
+      "sales": {
+        "cr_ledger": "Sales",
+        "dr_ledger_from_rules": true
+      }
+    }
+  }
+}

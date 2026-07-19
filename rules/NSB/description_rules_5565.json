@@ -1,0 +1,648 @@
+[
+    {
+        "pattern": [
+            "AIR INDIA EXPRESS LIMITED"
+        ],
+        "ledger": "AIR INDIA EXPRESS LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "ARUGONDA INFRATECH PRIVATE LIMITED"
+        ],
+        "ledger": "ARUGONDA INFRATECH PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "BUILDSUVIDHA INDIA PRIVATE LIMITED"
+        ],
+        "ledger": "BUILDSUVIDHA INDIA PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "BirlaNu Limited"
+        ],
+        "ledger": "BirlaNu Limited",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "DWARAKA ISPAT PRIVATE LIMITED"
+        ],
+        "ledger": "DWARAKA ISPAT PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "HELLA INFRA MARKET LIMITED"
+        ],
+        "ledger": "HELLA INFRA MARKET LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "INDIAMART INTERMESH LTD."
+        ],
+        "ledger": "INDIAMART INTERMESH LTD.",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "KARTHIK CEMENT TRADING COMPANY"
+        ],
+        "ledger": "KARTHIK CEMENT TRADING COMPANY",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "KOTAK MAHINDRA BANK LTD."
+        ],
+        "ledger": "KOTAK MAHINDRA BANK LTD.",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M R ENTERPRISES"
+        ],
+        "ledger": "M R ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S BSA STEELS (P) LTD"
+        ],
+        "ledger": "M/S BSA STEELS (P) LTD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S CEMENT WORLD"
+        ],
+        "ledger": "M/S CEMENT WORLD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S NAGARJUNA STEEL SUPPLIERS"
+        ],
+        "ledger": "M/S NAGARJUNA STEEL SUPPLIERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S SRI SAI KRISHNA STEEL AND CEMENT"
+        ],
+        "ledger": "M/S SRI SAI KRISHNA STEEL AND CEMENT",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MOOSANI MARKETING"
+        ],
+        "ledger": "MOOSANI MARKETING",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MPLUS SOLUTIONS INDIA PRIVATE LIMITED"
+        ],
+        "ledger": "MPLUS SOLUTIONS INDIA PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "Mahavira Cement Agency"
+        ],
+        "ledger": "Mahavira Cement Agency",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "N S PATEL AGENCIES"
+        ],
+        "ledger": "N S PATEL AGENCIES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NAGESWARI TRADERS"
+        ],
+        "ledger": "NAGESWARI TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NCL BUILDTEK LIMITED"
+        ],
+        "ledger": "NCL BUILDTEK LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NEHA BUILDPRO PRIVATE LIMITED"
+        ],
+        "ledger": "NEHA BUILDPRO PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NEON MOTORS PRIVATE LIMITED"
+        ],
+        "ledger": "NEON MOTORS PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "PANCHAMUKHI CEMENT AGENCY"
+        ],
+        "ledger": "PANCHAMUKHI CEMENT AGENCY",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "PATEL & CO"
+        ],
+        "ledger": "PATEL & CO",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "PUNNA TRANSPORT"
+        ],
+        "ledger": "PUNNA TRANSPORT",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "R.K.AGENCIES"
+        ],
+        "ledger": "R.K.AGENCIES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "REAL ROCK ECO AAC BLOCKS LLP"
+        ],
+        "ledger": "REAL ROCK ECO AAC BLOCKS LLP",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SANDHYA TRADERS"
+        ],
+        "ledger": "SANDHYA TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SCAPIA TECHNOLOGY PRIVATE LIMITED"
+        ],
+        "ledger": "SCAPIA TECHNOLOGY PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SHRIRAM GENERAL INSURANCE COMPANY LTD"
+        ],
+        "ledger": "SHRIRAM GENERAL INSURANCE COMPANY LTD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SHUBAM CEMENT AND SANITATION"
+        ],
+        "ledger": "SHUBAM CEMENT AND SANITATION",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SMARTSHIFT INFO MARKETING SERVICES PRIVATE LIMITED"
+        ],
+        "ledger": "SMARTSHIFT INFO MARKETING SERVICES PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRI KAMADHENU ENTERPRISES"
+        ],
+        "ledger": "SRI KAMADHENU ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRI KAMAKSHI CEMENT AGENCIES"
+        ],
+        "ledger": "SRI KAMAKSHI CEMENT AGENCIES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRINIVASA BRICKS"
+        ],
+        "ledger": "SRINIVASA BRICKS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SVL WHEEL TECH"
+        ],
+        "ledger": "SVL WHEEL TECH",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "Sandeep Agencies"
+        ],
+        "ledger": "Sandeep Agencies",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "THE RAMCO CEMENTS LIMITED"
+        ],
+        "ledger": "THE RAMCO CEMENTS LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "TIRUMALA AERATED BLOCKS PRIVATE LIMITED"
+        ],
+        "ledger": "TIRUMALA AERATED BLOCKS PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "VEDANSH ENTERPRISES"
+        ],
+        "ledger": "VEDANSH ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "VISHWAM TRANSPORT"
+        ],
+        "ledger": "VISHWAM TRANSPORT",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NCL INDUSTRIES LTD"
+        ],
+        "ledger": "NCL INDUSTRIES LTD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MALLIKARJUNA STEEL TRADERS",
+            "MALLIKARJUNA STEEL"
+        ],
+        "ledger": "MALLIKARJUNA STEEL TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S SRINIVASA STEEL TRADERS"
+        ],
+        "ledger": "M/S SRINIVASA STEEL TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S BSA STEELS \\(P\\)\\s+LTD"
+        ],
+        "ledger": "M/S BSA STEELS (P) LTD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "ARROW PAINTS"
+        ],
+        "payment_ledger": "ARROW PAINTS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "AVANTHI TRADERS"
+        ],
+        "payment_ledger": "AVANTHI TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "B RAMA RAO & CO"
+        ],
+        "payment_ledger": "B RAMA RAO & CO",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "BALAJI STEEL AND CEMENT TRADERS"
+        ],
+        "payment_ledger": "BALAJI STEEL AND CEMENT TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "BASANTHI CONSTRUCTIONS",
+            "BASANTI"
+        ],
+        "payment_ledger": "BASANTHI CONSTRUCTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "EE ENGINEERING CONSTRUCTION SERVICES"
+        ],
+        "payment_ledger": "EE ENGINEERING CONSTRUCTION SERVICES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "FUSION DESIGNS"
+        ],
+        "payment_ledger": "FUSION DESIGNS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "G RAMANA"
+        ],
+        "payment_ledger": "G RAMANA",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "GD CONSTRUCTIONS"
+        ],
+        "payment_ledger": "GD CONSTRUCTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "HARILEKHA CONSTRUCTIONS"
+        ],
+        "payment_ledger": "HARILEKHA CONSTRUCTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "HARIVALLABH DEVELOPERS AND BUILDERS"
+        ],
+        "payment_ledger": "HARIVALLABH DEVELOPERS AND BUILDERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "JANAKIRAMA STEEL TRADERS"
+        ],
+        "payment_ledger": "JANAKIRAMA STEEL TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "KSR KRISHNAMURTHY"
+        ],
+        "payment_ledger": "KSR KRISHNAMURTHY",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M GANESH"
+        ],
+        "payment_ledger": "M GANESH",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M LAXMAN RAO & SONS",
+            "M LAXMAN",
+            "RAO SONS"
+        ],
+        "payment_ledger": "M LAXMAN RAO & SONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M NARENDER KUMAR"
+        ],
+        "payment_ledger": "M NARENDER KUMAR",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S ATTILI SUBBARAO"
+        ],
+        "payment_ledger": "M/S ATTILI SUBBARAO",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S S GANGADHARA RAO & COMPANY"
+        ],
+        "payment_ledger": "M/S S GANGADHARA RAO & COMPANY",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "M/S. SUVANSREE INFRA"
+        ],
+        "payment_ledger": "M/S. SUVANSREE INFRA",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MA ENGINEERING"
+        ],
+        "payment_ledger": "MA ENGINEERING",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MAHAVIRA CEMENT AGENCY"
+        ],
+        "payment_ledger": "MAHAVIRA CEMENT AGENCY",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MASTERBOND CONSTRUCTION CHEMICALS PVT LTD"
+        ],
+        "payment_ledger": "MASTERBOND CONSTRUCTION CHEMICALS PVT LTD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "MKT PRANEETH HOMES"
+        ],
+        "payment_ledger": "MKT PRANEETH HOMES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "N BHASKAR RAO",
+            "N BHASKAR"
+        ],
+        "payment_ledger": "N BHASKAR RAO",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NADENDLA CONSTRUCTIONS PRIVATE LIMITED"
+        ],
+        "payment_ledger": "NADENDLA CONSTRUCTIONS PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NAINA CONVENTIONS"
+        ],
+        "payment_ledger": "NAINA CONVENTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NAINA POWER PVT LTD"
+        ],
+        "payment_ledger": "NAINA POWER PVT LTD",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "P&S CONSTRUCTION"
+        ],
+        "payment_ledger": "P&S CONSTRUCTION",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "PANCHAMUKHI CEMENT AGENCY"
+        ],
+        "payment_ledger": "PANCHAMUKHI CEMENT AGENCY",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "RAJASTHAN CONSTRUCTION PRIVATE LIMITED"
+        ],
+        "payment_ledger": "RAJASTHAN CONSTRUCTION PRIVATE LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "RJ CONSTRUCTIONS"
+        ],
+        "payment_ledger": "RJ CONSTRUCTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "RMR ENTERPRISES"
+        ],
+        "payment_ledger": "RMR ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "RRK CONSTRUCTIONS"
+        ],
+        "payment_ledger": "RRK CONSTRUCTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "RV ASSOCIATES"
+        ],
+        "payment_ledger": "RV ASSOCIATES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SARASWATHI CONSTRUCTIONS"
+        ],
+        "payment_ledger": "SARASWATHI CONSTRUCTIONS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SHIV SHAKTI ENTERPRISES"
+        ],
+        "payment_ledger": "SHIV SHAKTI ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRB INFRA DEVELOPERS"
+        ],
+        "payment_ledger": "SRB INFRA DEVELOPERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRI KAMADHENU ENTERPRISES"
+        ],
+        "payment_ledger": "SRI KAMADHENU ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRI SAI BALAJI STEEL TRADERS"
+        ],
+        "payment_ledger": "SRI SAI BALAJI STEEL TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRI SAI STEELS"
+        ],
+        "payment_ledger": "SRI SAI STEELS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRI VENKATESHWARA BUILDING MATERIALS"
+        ],
+        "payment_ledger": "SRI VENKATESHWARA BUILDING MATERIALS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "SRINIVASA STEEL TRADERS",
+            "SRINIVASA STEEL"
+        ],
+        "payment_ledger": "SRINIVASA STEEL TRADERS",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "TECHNOPAINTS AND CHEMICALS LIMITED"
+        ],
+        "payment_ledger": "TECHNOPAINTS AND CHEMICALS LIMITED",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "VEDANSH ENTERPRISES"
+        ],
+        "payment_ledger": "VEDANSH ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "NAINENI",
+            "CHAITANYA",
+            "N CHAITANYA",
+            "CHAITANYA N"
+        ],
+        "payment_ledger": "VEDANSH ENTERPRISES",
+        "priority": 100
+    },
+    {
+        "pattern": [
+            "*"
+        ],
+        "payment_ledger": "VEDANSH ENTERPRISES",
+        "priority": 50
+    }
+]

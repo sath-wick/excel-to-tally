@@ -1,0 +1,599 @@
+================================================================================
+HOW TO ADD A NEW COMPANY
+================================================================================
+
+This guide is written for users and stakeholders who need to add a new company
+to the Tally import framework.
+
+You do not need programming knowledge to follow this guide. The main idea is:
+
+1. Create a folder for the new company.
+2. Add the company's bank details.
+3. Add the matching rules that tell the system which Tally ledgers to use.
+4. Run a test and review the output.
+
+
+================================================================================
+1. WHAT INFORMATION YOU NEED BEFORE STARTING
+================================================================================
+
+Before adding a new company, collect the following details:
+
+1. Company name
+   Example:
+       New Client
+
+2. Bank name and account identifier
+   Example:
+       HDFC 1234
+       SBI 9876
+       DBS 7960
+
+3. Tally bank ledger name
+   This must be the exact bank ledger name used in Tally.
+
+   Example:
+       HDFC Bank 1234
+
+4. Tally export file, if available
+   This file helps the system avoid creating duplicate entries.
+
+   Usual file name:
+       Transactions.json
+
+5. Common bank statement descriptions
+   These are the repeated descriptions shown in the bank statement.
+
+   Example:
+       CREDIT INTEREST
+       LOCKER RENT
+       NEFT FROM ABC TRADERS
+
+6. Tally ledger names for those descriptions
+   These must match the ledger names in Tally exactly.
+
+
+================================================================================
+2. CREATE A COMPANY FOLDER
+================================================================================
+
+Go to the rules folder.
+
+Create a new folder using the company name.
+
+Example:
+
+    rules/New Client/
+
+Inside this company folder, you will keep the files that decide how entries are
+classified for this company.
+
+
+================================================================================
+3. CREATE THE IGNORE LIST
+================================================================================
+
+Some bank statement lines should not become Tally entries.
+
+Example:
+
+- Opening balance lines
+- Brought forward balance lines
+- Informational lines that are not real transactions
+
+Create this file inside the company folder:
+
+    rules/New Client/ignored_descriptions.json
+
+Use this format:
+
+{
+  "description_ignore_rules": [
+    {
+      "name": "Ignore Opening Balance Entry",
+      "pattern": "B/F ...",
+      "mode": "exact",
+      "case_sensitive": false
+    }
+  ]
+}
+
+================================================================================
+4. CREATE THE DESCRIPTION RULES FILE
+================================================================================
+Example for bank HDFC 1234:
+
+    rules/New Client/description_rules_1234.json
+
+Example content:
+
+[
+  {
+    "pattern": [
+      "CREDIT INTEREST"
+    ],
+    "ledger": "Bank Interest",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "LOCKER RENT"
+    ],
+    "ledger": "Locker Rent",
+    "priority": 100
+  }
+]
+Important points:
+
+- The ledger name must be exactly the same as in Tally.
+- Start with the common descriptions first.
+- After running the import, check the Unclassified sheet.
+- Add more rules for anything that appears in Unclassified.
+
+================================================================================
+5. CREATE A FOLDER FOR DUPLICATE CHECKING
+================================================================================
+
+Go to the exports folder.
+
+Create a new folder using the company name.
+
+Example:
+
+    exports/New Client/
+
+If you have the Tally export file, place it here:
+
+    exports/New Client/Transactions.json
+
+================================================================================
+6. ADD THE COMPANY TO THE COMPANY LIST
+================================================================================
+
+Open this file:
+
+    config/clients.json
+
+This file contains the list of companies shown in the launcher.
+
+Add the new company inside the company list.
+
+Example:
+
+"New Client": {
+  "duplicate_json_path": "./exports/New Client/Transactions.json",
+  "ignore_json_path": "./rules/New Client/ignored_descriptions.json",
+  "bank_categories": {
+    "HDFC": [
+      "HDFC 1234"
+    ]
+  },
+  "banks": {
+    "HDFC 1234": {
+      "ledger": "HDFC Bank 1234",
+      "rule_path": "./rules/New Client/description_rules_1234.json"
+    }
+  },
+  "sales": {
+    "enabled_bank_codes": [
+      "1234"
+    ]
+  },
+  "purchases": {
+    "enabled_bank_codes": [
+      "1234"
+    ]
+  }
+}
+
+What each part means:
+
+- duplicate_json_path
+  Where the Tally export file is kept for this company.
+
+- ignore_json_path
+  Where the ignore list is kept for this company.
+
+- bank_categories
+  How the banks are grouped in the launcher menu.
+
+- banks
+  The bank details used by the system.
+
+- ledger
+  The exact bank ledger name in Tally.
+
+- rule_path
+  The description rules file for that bank.
+
+- sales
+  Which bank account should be used for Sales imports.
+
+- purchases
+  Which bank account should be used for Purchases imports.
+
+
+================================================================================
+7. ADD MORE THAN ONE BANK
+================================================================================
+
+If the company has more than one bank account, list all the banks.
+
+Example:
+
+"New Client": {
+  "duplicate_json_path": "./exports/New Client/Transactions.json",
+  "ignore_json_path": "./rules/New Client/ignored_descriptions.json",
+  "bank_categories": {
+    "HDFC": [
+      "HDFC 1234",
+      "HDFC 5678"
+    ],
+    "SBI": [
+      "SBI 9999"
+    ]
+  },
+  "banks": {
+    "HDFC 1234": {
+      "ledger": "HDFC Bank 1234",
+      "rule_path": "./rules/New Client/description_rules_1234.json"
+    },
+    "HDFC 5678": {
+      "ledger": "HDFC Bank 5678",
+      "rule_path": "./rules/New Client/description_rules_5678.json"
+    },
+    "SBI 9999": {
+      "ledger": "SBI Bank 9999",
+      "rule_path": "./rules/New Client/description_rules_9999.json"
+    }
+  }
+}
+
+For every bank shown in the menu, make sure there is a matching bank detail
+entry with the correct Tally ledger and rule file.
+
+
+================================================================================
+8. SET UP SALES IMPORT
+================================================================================
+
+Sales import is used when the user wants to create Tally entries from a Sales
+Excel file.
+
+The Sales Excel file should have these columns:
+
+    DATE
+    INVOICE NO
+    PARTICULARS
+    GROSS VALUE
+
+To allow Sales import for bank 1234, use:
+
+"sales": {
+  "enabled_bank_codes": [
+    "1234"
+  ]
+}
+
+If Sales import is allowed for more than one bank:
+
+"sales": {
+  "enabled_bank_codes": [
+    "1234",
+    "5678"
+  ]
+}
+
+
+================================================================================
+9. SET UP PURCHASES IMPORT
+================================================================================
+
+Purchases import is used when the user wants to create Tally entries from a
+Purchases Excel file.
+
+The Purchases Excel file should have these columns:
+
+    NAME
+    INVOICE NO
+    DATE
+    GROSS AMT
+
+Purchases use the description rules file to match supplier names with Tally
+ledger names.
+
+Example:
+
+[
+  {
+    "pattern": [
+      "ABC TRADERS"
+    ],
+    "ledger": "ABC Traders",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "XYZ AGENCIES"
+    ],
+    "ledger": "XYZ Agencies",
+    "priority": 100
+  }
+]
+
+To allow Purchases import for bank 1234, use:
+
+"purchases": {
+  "enabled_bank_codes": [
+    "1234"
+  ]
+}
+
+
+================================================================================
+10. RUN A TEST
+================================================================================
+
+Open the application:
+
+    application.bat
+
+Then follow these steps:
+
+1. Select the new company.
+2. Select the type of import:
+       Sales
+       Purchases
+       Statements
+3. Select the bank group.
+4. Select the bank account.
+5. Select the input file.
+6. Wait for the output file to be created.
+
+The output files are created in:
+
+    output/
+
+Common output files:
+
+    Statement_Import.xlsx
+    Sales_Import.xlsx
+    Purchases_Import.xlsx
+
+
+================================================================================
+11. REVIEW THE OUTPUT FILE
+================================================================================
+
+After the file is created, open it and review the sheets.
+
+For statement imports, check:
+
+- Bank statement
+  The extracted bank statement.
+
+- Import Payment
+  Payment entries prepared for Tally.
+
+- Import Receipt
+  Receipt entries prepared for Tally.
+
+- Import Contra
+  Contra entries prepared for Tally.
+
+- Ignored
+  Entries skipped because they matched the ignore list.
+
+- Duplicates
+  Entries skipped because they may already exist in Tally.
+
+- Unclassified
+  Entries that the system could not classify.
+
+For Sales imports, check:
+
+- Import
+- Unclassified
+- Duplicate
+
+For Purchases imports, check:
+
+- Import
+- Unclassified
+- Duplicate
+
+The most important sheet to review is:
+
+    Unclassified
+
+Anything in this sheet needs a new or improved rule.
+
+
+================================================================================
+12. IMPROVE THE RULES
+================================================================================
+
+If entries appear in the Unclassified sheet:
+
+1. Read the description or supplier name shown there.
+2. Decide which Tally ledger it should go to.
+3. Add that text and ledger name to the correct description rules file.
+4. Run the import again.
+5. Repeat until the output is correct.
+
+Example:
+
+If Unclassified shows:
+
+    NEFT FROM ABC TRADERS
+
+And the correct Tally ledger is:
+
+    ABC Traders
+
+Add this rule:
+
+[
+  {
+    "pattern": [
+      "ABC TRADERS"
+    ],
+    "ledger": "ABC Traders",
+    "priority": 100
+  }
+]
+
+If the file already has rules, add the new rule inside the existing list.
+
+
+================================================================================
+13. COMMON ISSUES AND SIMPLE FIXES
+================================================================================
+
+Issue:
+The new company is not shown in the launcher.
+
+Fix:
+Check that the company was added in config/clients.json and that the company
+name is spelled correctly.
+
+
+Issue:
+The company appears, but the bank is missing.
+
+Fix:
+Check the bank list under bank_categories.
+
+
+Issue:
+The wrong bank ledger is used.
+
+Fix:
+Check the ledger name under banks. It must match the ledger name in Tally.
+
+
+Issue:
+The system says the Tally export file is missing.
+
+Fix:
+Place the Tally export file here:
+
+    exports/<Company Name>/Transactions.json
+
+If the file is not available, the import can still be run, but duplicate
+checking will not happen.
+
+
+Issue:
+Many entries are shown in Unclassified.
+
+Fix:
+Add more description rules for the bank.
+
+
+Issue:
+Purchases are shown in Unclassified.
+
+Fix:
+Add supplier names to the description rules file and connect them to the correct
+Tally ledger names.
+
+
+Issue:
+Sales or Purchases is not allowed for the selected bank.
+
+Fix:
+Check the sales or purchases bank number list in config/clients.json.
+
+Example:
+
+"sales": {
+  "enabled_bank_codes": [
+    "1234"
+  ]
+}
+
+
+================================================================================
+14. FINAL CHECKLIST
+================================================================================
+
+Use this checklist before handing over the new company setup:
+
+[ ] Company name is finalized.
+[ ] Bank names are finalized.
+[ ] Tally bank ledger names are confirmed.
+[ ] Company folder is created under rules.
+[ ] Ignore list is created.
+[ ] Description rules file is created for each bank.
+[ ] Company folder is created under exports.
+[ ] Tally export file is added, if available.
+[ ] Company is added to config/clients.json.
+[ ] Bank menu is checked in the launcher.
+[ ] Statement import is tested.
+[ ] Sales import is tested, if required.
+[ ] Purchases import is tested, if required.
+[ ] Output file is reviewed.
+[ ] Unclassified entries are reviewed.
+[ ] Missing rules are added.
+[ ] Final output is confirmed by the user or accountant.
+
+
+================================================================================
+15. SIMPLE COMPLETE EXAMPLE
+================================================================================
+
+Company:
+
+    New Client
+
+Bank:
+
+    HDFC 1234
+
+Tally bank ledger:
+
+    HDFC Bank 1234
+
+Folders and files to create:
+
+    rules/New Client/ignored_descriptions.json
+    rules/New Client/description_rules_1234.json
+    exports/New Client/Transactions.json
+
+Company setup to add:
+
+"New Client": {
+  "duplicate_json_path": "./exports/New Client/Transactions.json",
+  "ignore_json_path": "./rules/New Client/ignored_descriptions.json",
+  "bank_categories": {
+    "HDFC": [
+      "HDFC 1234"
+    ]
+  },
+  "banks": {
+    "HDFC 1234": {
+      "ledger": "HDFC Bank 1234",
+      "rule_path": "./rules/New Client/description_rules_1234.json"
+    }
+  },
+  "sales": {
+    "enabled_bank_codes": [
+      "1234"
+    ]
+  },
+  "purchases": {
+    "enabled_bank_codes": [
+      "1234"
+    ]
+  }
+}
+
+After this, open the application and select:
+
+    New Client
+    HDFC
+    HDFC 1234
+
+Then run a test import and review the output file.
+
