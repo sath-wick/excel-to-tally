@@ -1,0 +1,16 @@
+# Tally Framework — Python dependencies
+#
+# Install with:
+#   pip install -r requirements.txt
+#
+# Note: camelot-py also requires Ghostscript installed on the system.
+#   Windows: https://www.ghostscript.com/releases/gsdnld.html
+#   After installing Ghostscript, ensure it is on your PATH.
+
+# Core data processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# PDF extraction
+camelot-py[cv]>=0.11.0    # table-based PDF extraction (requires Ghostscript)
+pdfplumber>=0.10.0         # text-based PDF extraction (fallback parser)
