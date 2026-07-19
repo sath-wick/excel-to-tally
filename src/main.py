@@ -45,11 +45,25 @@ FINAL_OUTPUT = "./output/Statement_Import.xlsx"
 
 
 def confirm_step(message):
+    # Check if run non-interactively (like from launcher_gui)
+    if not sys.stdin.isatty():
+        print(f"__GUI_CONFIRM__:{message}", flush=True)
+        try:
+            choice = sys.stdin.readline().strip().lower()
+            return choice in ("y", "yes", "true")
+        except Exception as e:
+            print(f"Error reading GUI confirmation: {e}", flush=True)
+            return True
+            
     print("\n" + "=" * 50)
     print(message)
     print("=" * 50)
-    choice = input("Continue? (Y/N): ").strip().lower()
-    return choice == "y"
+    try:
+        choice = input("Continue? (Y/N): ").strip().lower()
+        return choice == "y"
+    except EOFError:
+        print("Non-interactive mode detected and GUI confirmation failed. Auto-confirming.")
+        return True
 
 
 def prepare_voucher_sheet(df_output, voucher_type):
@@ -136,7 +150,12 @@ def main():
             DUPLICATE_JSON_PATH,
         )
     else:
-        print(f"\nDuplicate JSON not found: {DUPLICATE_JSON_PATH}")
+        msg = f"Duplicate transactions JSON file not found at:\n{DUPLICATE_JSON_PATH}\n\nContinuing without duplicate filtering."
+        if not sys.stdin.isatty():
+            print(f"__GUI_ALERT__:{msg}", flush=True)
+            sys.stdin.readline()
+        else:
+            print(f"\n{msg}")
 
     if os.path.exists(IGNORE_JSON_PATH):
         filtered_statement_df, ignored_descriptions_df = split_ignored_descriptions(

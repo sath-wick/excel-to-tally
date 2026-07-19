@@ -66,7 +66,29 @@ class VoucherEngine:
         else:
             resolved_rule["ledger"] = rule.get("ledger")
 
-        resolved_rule["voucher_type"] = self._resolve_voucher_type(rule, transaction)
+        # Evaluate amount_tiers if defined
+        if "amount_tiers" in rule and isinstance(rule["amount_tiers"], list):
+            txn_amount = getattr(transaction, "amount", 0.0)
+            for tier in rule["amount_tiers"]:
+                t_min = float(tier.get("min", float("-inf")))
+                t_max = float(tier.get("max", float("inf")))
+                if t_min <= txn_amount <= t_max:
+                    if direction == "OUT" and ("payment_ledger" in tier or "out_ledger" in tier):
+                        resolved_rule["ledger"] = tier.get("payment_ledger") or tier.get("out_ledger")
+                    elif direction == "IN" and ("receipt_ledger" in tier or "in_ledger" in tier):
+                        resolved_rule["ledger"] = tier.get("receipt_ledger") or tier.get("in_ledger")
+                    elif "ledger" in tier:
+                        resolved_rule["ledger"] = tier["ledger"]
+                    
+                    if "voucher_type" in tier:
+                        resolved_rule["voucher_type"] = tier["voucher_type"]
+                        if tier["voucher_type"].lower() == "contra":
+                            resolved_rule["is_contra"] = True
+                    break
+
+        if "voucher_type" not in resolved_rule or not resolved_rule["voucher_type"]:
+            resolved_rule["voucher_type"] = self._resolve_voucher_type(resolved_rule, transaction)
+
         return resolved_rule
 
     def process(self, transactions):

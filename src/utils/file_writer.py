@@ -29,7 +29,12 @@ def safe_excel_write(write_function, file_path, max_retries=3):
                 print("\nCould not proceed because the file is still open.")
                 sys.exit(1)
 
-            input("Please close the file and press Enter to retry...")
+            try:
+                input("Please close the file and press Enter to retry...")
+            except EOFError:
+                print("Non-interactive mode. Waiting 3 seconds for file to be closed before retrying...")
+                import time
+                time.sleep(3)
 
         except Exception as e:
             print(f"\nUnexpected error while writing '{file_path}': {e}")

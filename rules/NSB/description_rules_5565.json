@@ -402,7 +402,8 @@
     },
     {
         "pattern": [
-            "KSR KRISHNAMURTHY"
+            "KSR KRISHNAMURTHY",
+            "KSR KRISHNA MURTHY"
         ],
         "payment_ledger": "KSR KRISHNAMURTHY",
         "priority": 100
@@ -637,12 +638,5 @@
         ],
         "payment_ledger": "VEDANSH ENTERPRISES",
         "priority": 100
-    },
-    {
-        "pattern": [
-            "*"
-        ],
-        "payment_ledger": "VEDANSH ENTERPRISES",
-        "priority": 50
     }
 ]

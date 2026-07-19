@@ -5,6 +5,14 @@ import msvcrt
 import tkinter as tk
 from tkinter import filedialog
 
+# Ensure the root path and src root are in the sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+src_root = os.path.abspath(os.path.dirname(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+if src_root not in sys.path:
+    sys.path.insert(0, src_root)
+
 from core.client_config import (
     extract_bank_code,
     get_client_bank_categories,
@@ -167,12 +175,12 @@ def main():
         choice = read_menu_choice(3)
 
         if choice == 1:
-            if run_excel_import_flow(client_name, "Sales", "sales_main.py", select_sales_file):
+            if run_excel_import_flow(client_name, "Sales", "src/sales_main.py", select_sales_file):
                 return
             continue
 
         if choice == 2:
-            if run_excel_import_flow(client_name, "Purchases", "purchases_main.py", select_purchases_file):
+            if run_excel_import_flow(client_name, "Purchases", "src/purchases_main.py", select_purchases_file):
                 return
             continue
 
@@ -209,7 +217,7 @@ def main():
                 print(f"Selected Bank: {bank_ledger}")
                 print(f"Selected File: {file_path}")
                 print("\nProcessing...\n")
-                subprocess.run(["python", "main.py", file_path, bank_ledger, client_name])
+                subprocess.run(["python", "src/main.py", file_path, bank_ledger, client_name])
                 return
 
 

@@ -24,13 +24,9 @@ if exist %LOCKFILE% (
 echo %MYPID% > %LOCKFILE%
 
 :: Run app
-python launcher.py
+python src/gateway_gui.py
 
 :: Remove lock file after exit
 if exist %LOCKFILE% del %LOCKFILE%
-
-echo.
-set /p _="Press Enter to close..."
-echo.
 
 exit /b 0

@@ -292,6 +292,13 @@ def build_purchase_sheets(purchases_file_path, bank_ledger, client_name):
     duplicate_matcher = None
     if os.path.exists(DUPLICATE_JSON_PATH):
         duplicate_matcher = ExistingTransactionMatcher(DUPLICATE_JSON_PATH)
+    else:
+        msg = f"Duplicate transactions JSON file not found at:\n{DUPLICATE_JSON_PATH}\n\nContinuing without duplicate filtering."
+        if not sys.stdin.isatty():
+            print(f"__GUI_ALERT__:{msg}", flush=True)
+            sys.stdin.readline()
+        else:
+            print(f"\n{msg}")
 
     import_rows = []
     unclassified_rows = []

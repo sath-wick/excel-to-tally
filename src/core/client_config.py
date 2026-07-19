@@ -2,10 +2,11 @@ import json
 import os
 
 
-CONFIG_PATH = "./config/clients.json"
-DEFAULT_RULE_PATH = "./rules/description_rules_494.json"
-DEFAULT_DUPLICATE_JSON_PATH = "./exports/Transactions.json"
-DEFAULT_IGNORE_JSON_PATH = "./rules/ignored_descriptions.json"
+_ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+CONFIG_PATH = os.path.join(_ROOT_DIR, "config", "clients.json")
+DEFAULT_RULE_PATH = os.path.join(_ROOT_DIR, "rules", "description_rules_494.json")
+DEFAULT_DUPLICATE_JSON_PATH = os.path.join(_ROOT_DIR, "exports", "Transactions.json")
+DEFAULT_IGNORE_JSON_PATH = os.path.join(_ROOT_DIR, "rules", "ignored_descriptions.json")
 
 
 def load_config(config_path=CONFIG_PATH):
@@ -90,31 +91,45 @@ def resolve_bank_account(client_name, bank_ledger):
     }
 
 
+def _normalize_path(path_str):
+    if not path_str:
+        return path_str
+    if not os.path.isabs(path_str):
+        return os.path.abspath(os.path.join(_ROOT_DIR, path_str))
+    return path_str
+
+
 def resolve_rule_path(bank_ledger, client_name=None, default_rule_path=DEFAULT_RULE_PATH):
     bank = resolve_bank_account(client_name, bank_ledger)
     configured_rule_path = bank.get("rule_path")
 
-    if configured_rule_path and os.path.exists(configured_rule_path):
-        return configured_rule_path
+    if configured_rule_path:
+        norm_path = _normalize_path(configured_rule_path)
+        if os.path.exists(norm_path):
+            return norm_path
 
     digits_only = extract_bank_code(bank_ledger)
-    if digits_only == "494" and os.path.exists(default_rule_path):
-        return default_rule_path
+    if digits_only == "494":
+        norm_default = _normalize_path(default_rule_path)
+        if os.path.exists(norm_default):
+            return norm_default
 
     for candidate in _candidate_keys(bank_ledger):
-        bank_specific_rule_path = f"./rules/description_rules_{candidate}.json"
+        bank_specific_rule_path = os.path.join(_ROOT_DIR, "rules", f"description_rules_{candidate}.json")
         if os.path.exists(bank_specific_rule_path):
             return bank_specific_rule_path
 
-    return default_rule_path
+    return _normalize_path(default_rule_path)
 
 
 def resolve_duplicate_json_path(client_name=None):
-    return get_client(client_name).get("duplicate_json_path", DEFAULT_DUPLICATE_JSON_PATH)
+    raw_path = get_client(client_name).get("duplicate_json_path", DEFAULT_DUPLICATE_JSON_PATH)
+    return _normalize_path(raw_path)
 
 
 def resolve_ignore_json_path(client_name=None):
-    return get_client(client_name).get("ignore_json_path", DEFAULT_IGNORE_JSON_PATH)
+    raw_path = get_client(client_name).get("ignore_json_path", DEFAULT_IGNORE_JSON_PATH)
+    return _normalize_path(raw_path)
 
 
 def resolve_module_dr_ledger(client_name, module_name, default_ledger):

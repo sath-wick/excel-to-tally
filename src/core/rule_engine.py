@@ -22,6 +22,13 @@ class RuleEngine:
 
             for pattern in patterns:
                 if re.search(pattern, description, re.IGNORECASE):
-                    return rule  # ← only rule
+                    amount = getattr(transaction, "amount", 0.0)
+                    min_amt = rule.get("min_amount")
+                    max_amt = rule.get("max_amount")
+                    if min_amt is not None and amount < float(min_amt):
+                        continue
+                    if max_amt is not None and amount > float(max_amt):
+                        continue
+                    return rule
 
         return None
