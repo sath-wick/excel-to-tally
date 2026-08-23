@@ -7,7 +7,7 @@ class Transaction:
         raw_date = pd.to_datetime(
             row.get("Value Date"),
             errors="coerce",
-            dayfirst=False  # bank statement is yyyy-mm-dd
+            dayfirst=True
         )
 
         if pd.notnull(raw_date):

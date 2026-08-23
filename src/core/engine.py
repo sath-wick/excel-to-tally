@@ -2,6 +2,7 @@ from core.duplicate_filter import (
     ExistingTransactionMatcher,
 )
 from core.bank_3332_rules import apply_bank_specific_rule_override
+from core.client_config import get_client_bank_categories
 
 
 class VoucherEngine:
@@ -10,7 +11,8 @@ class VoucherEngine:
         rule_engine,
         builder_registry,
         duplicate_json_path=None,
-        bank_ledger=None
+        bank_ledger=None,
+        client_name=None
     ):
         self.rule_engine = rule_engine
         self.builder_registry = builder_registry
@@ -22,10 +24,21 @@ class VoucherEngine:
         if duplicate_json_path:
             self.duplicate_matcher = ExistingTransactionMatcher(duplicate_json_path)
 
+        self.client_banks = set()
+        if client_name:
+            try:
+                categories = get_client_bank_categories(client_name)
+                for banks in categories.values():
+                    for b in banks:
+                        self.client_banks.add(str(b).strip().lower())
+            except Exception as e:
+                print(f"Error loading client bank accounts in VoucherEngine: {e}")
+
     def _resolve_voucher_type(self, rule, transaction):
         """
         Voucher type source of truth:
         - Contra can be explicitly forced by rule.
+        - If mapped ledger belongs to the client's other bank accounts, treat as Contra.
         - Otherwise decide from statement direction.
         """
         if bool(rule.get("is_contra")) or bool(rule.get("contra")):
@@ -34,6 +47,13 @@ class VoucherEngine:
         configured_type = str(rule.get("voucher_type", "")).strip().lower()
         if configured_type == "contra":
             return "Contra"
+
+        # Check if target ledger is one of the client's own banks
+        resolved_ledger = rule.get("ledger")
+        if resolved_ledger:
+            resolved_ledger_clean = str(resolved_ledger).strip().lower()
+            if resolved_ledger_clean in self.client_banks:
+                return "Contra"
 
         direction = getattr(transaction, "direction", None)
         if direction == "OUT":
@@ -47,6 +67,7 @@ class VoucherEngine:
         Optional extension:
         - payment_ledger / out_ledger => OUT transactions
         - receipt_ledger / in_ledger => IN transactions
+        - fall back to any available ledger key if direction-specific is missing.
         """
         resolved_rule = dict(rule)
         direction = getattr(transaction, "direction", None)
@@ -56,15 +77,25 @@ class VoucherEngine:
                 rule.get("payment_ledger")
                 or rule.get("out_ledger")
                 or rule.get("ledger")
+                or rule.get("receipt_ledger")
+                or rule.get("in_ledger")
             )
         elif direction == "IN":
             resolved_rule["ledger"] = (
                 rule.get("receipt_ledger")
                 or rule.get("in_ledger")
                 or rule.get("ledger")
+                or rule.get("payment_ledger")
+                or rule.get("out_ledger")
             )
         else:
-            resolved_rule["ledger"] = rule.get("ledger")
+            resolved_rule["ledger"] = (
+                rule.get("ledger")
+                or rule.get("payment_ledger")
+                or rule.get("receipt_ledger")
+                or rule.get("out_ledger")
+                or rule.get("in_ledger")
+            )
 
         # Evaluate amount_tiers if defined
         if "amount_tiers" in rule and isinstance(rule["amount_tiers"], list):
@@ -73,12 +104,30 @@ class VoucherEngine:
                 t_min = float(tier.get("min", float("-inf")))
                 t_max = float(tier.get("max", float("inf")))
                 if t_min <= txn_amount <= t_max:
-                    if direction == "OUT" and ("payment_ledger" in tier or "out_ledger" in tier):
-                        resolved_rule["ledger"] = tier.get("payment_ledger") or tier.get("out_ledger")
-                    elif direction == "IN" and ("receipt_ledger" in tier or "in_ledger" in tier):
-                        resolved_rule["ledger"] = tier.get("receipt_ledger") or tier.get("in_ledger")
-                    elif "ledger" in tier:
-                        resolved_rule["ledger"] = tier["ledger"]
+                    if direction == "OUT":
+                        resolved_rule["ledger"] = (
+                            tier.get("payment_ledger")
+                            or tier.get("out_ledger")
+                            or tier.get("ledger")
+                            or tier.get("receipt_ledger")
+                            or tier.get("in_ledger")
+                        )
+                    elif direction == "IN":
+                        resolved_rule["ledger"] = (
+                            tier.get("receipt_ledger")
+                            or tier.get("in_ledger")
+                            or tier.get("ledger")
+                            or tier.get("payment_ledger")
+                            or tier.get("out_ledger")
+                        )
+                    else:
+                        resolved_rule["ledger"] = (
+                            tier.get("ledger")
+                            or tier.get("payment_ledger")
+                            or tier.get("receipt_ledger")
+                            or tier.get("out_ledger")
+                            or tier.get("in_ledger")
+                        )
                     
                     if "voucher_type" in tier:
                         resolved_rule["voucher_type"] = tier["voucher_type"]
@@ -98,8 +147,20 @@ class VoucherEngine:
             rule = self.rule_engine.match(txn)
 
             if not rule:
-                self.unclassified.append(txn)
-                continue
+                txn_amount = getattr(txn, "amount", 0.0)
+                if txn_amount >= 500000:
+                    setattr(txn, "unclassified_reason", "amount greater than 500000 but no ledger found")
+                    self.unclassified.append(txn)
+                    continue
+                else:
+                    direction = getattr(txn, "direction", None)
+                    rule = {}
+                    if direction == "OUT":
+                        rule["ledger"] = "Labour Charges"
+                    elif direction == "IN":
+                        rule["ledger"] = "Receipts"
+                    else:
+                        rule["ledger"] = "Labour Charges"
 
             resolved_rule = self._resolve_directional_rule(rule, txn)
             resolved_rule = apply_bank_specific_rule_override(
@@ -107,6 +168,12 @@ class VoucherEngine:
                 txn,
                 self.bank_ledger
             )
+
+            # Safeguard: if resolved ledger is empty, mark as unclassified
+            if not resolved_rule.get("ledger"):
+                self.unclassified.append(txn)
+                continue
+
             builder = self.builder_registry.get(resolved_rule.get("voucher_type"))
 
             if not builder:

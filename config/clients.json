@@ -67,12 +67,25 @@
       "bank_categories": {
         "DBS": [
           "DBS 7960"
+        ],
+        "SBI": [],
+        "YES": [
+          "4086",
+          "5308"
         ]
       },
       "banks": {
         "DBS 7960": {
-          "ledger": "",
+          "ledger": "DBS 7960",
           "rule_path": "./rules/D Raju/description_rules_7960.json"
+        },
+        "5308": {
+          "ledger": "5308",
+          "rule_path": "./rules/D Raju/description_rules_5308.json"
+        },
+        "4086": {
+          "ledger": "4086",
+          "rule_path": "./rules/D Raju/description_rules_4086.json"
         }
       }
     },
@@ -81,18 +94,45 @@
       "ignore_json_path": "./rules/NSB/ignored_descriptions.json",
       "bank_categories": {
         "Kotak": [
-          "Kotak 5565"
+          "Kotak 5565",
+          "Chaitanya"
+        ],
+        "ICICI": [
+          "ICICI 2224"
         ]
       },
       "banks": {
         "Kotak 5565": {
           "ledger": "Kotak 5565",
           "rule_path": "./rules/NSB/description_rules_5565.json"
+        },
+        "Chaitanya": {
+          "ledger": "Chaitanya",
+          "rule_path": "./rules/NSB Traders/description_rules_chaitanya.json"
+        },
+        "ICICI 2224": {
+          "ledger": "ICICI 2224",
+          "rule_path": "./rules/NSB Traders/description_rules_icici_2224.json"
         }
       },
       "sales": {
         "cr_ledger": "Sales",
         "dr_ledger_from_rules": true
+      }
+    },
+    "Janardhan Rao": {
+      "duplicate_json_path": "./exports/Janardhan Rao/Transactions.json",
+      "ignore_json_path": "./rules/Janardhan Rao/ignored_descriptions.json",
+      "bank_categories": {
+        "DBS": [
+          "DBS 2632"
+        ]
+      },
+      "banks": {
+        "DBS 2632": {
+          "ledger": "DBS 2632",
+          "rule_path": "./rules/Janardhan Rao/description_rules_dbs_2632.json"
+        }
       }
     }
   }

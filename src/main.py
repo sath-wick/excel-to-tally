@@ -92,7 +92,7 @@ def prepare_voucher_sheet(df_output, voucher_type):
 
 
 def build_unclassified_df(unclassified_transactions):
-    columns = ["Value Date", "Description", "Withdrawal", "Deposit", "Reference"]
+    columns = ["Value Date", "Description", "Withdrawal", "Deposit", "Reference", "Reason"]
 
     if not unclassified_transactions:
         return pd.DataFrame(columns=columns)
@@ -104,6 +104,7 @@ def build_unclassified_df(unclassified_transactions):
             "Withdrawal": txn.withdrawal,
             "Deposit": txn.deposit,
             "Reference": txn.reference,
+            "Reason": getattr(txn, "unclassified_reason", "")
         }
         for txn in unclassified_transactions
     ]
@@ -184,6 +185,7 @@ def main():
         builder_registry,
         duplicate_json_path=duplicate_json_path,
         bank_ledger=BANK_LEDGER,
+        client_name=CLIENT_NAME,
     )
 
     vouchers = engine.process(transactions)

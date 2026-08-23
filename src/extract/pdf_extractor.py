@@ -39,16 +39,16 @@ def normalize_header(text):
 def map_column(col):
     col_lower = normalize_header(col)
 
-    if "transaction" in col_lower or ("txn" in col_lower and "date" in col_lower):
+    if "transaction" in col_lower or ("txn" in col_lower and "date" in col_lower) or ("tran" in col_lower and "date" in col_lower):
         return "Transaction Date"
 
     if "value" in col_lower:
         return "Value Date"
 
-    if "description" in col_lower:
+    if "description" in col_lower or "particulars" in col_lower:
         return "Description"
 
-    if "reference" in col_lower or "cheque" in col_lower or "ref" in col_lower:
+    if "reference" in col_lower or "cheque" in col_lower or "ref" in col_lower or "chq" in col_lower:
         return "Reference Number"
 
     if "withdraw" in col_lower or "debit" in col_lower:
@@ -322,12 +322,252 @@ def parse_dbs_transaction_start(line, previous_balance):
     }
 
 
+def extract_dbs_treasures_statement(pdf_path):
+    try:
+        import pdfplumber
+    except ImportError:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    transactions = []
+    current_transaction = None
+    pending_description = []
+
+    date_regex = re.compile(r"^\s*(\d{2}-\d{2}-\d{4})\s*")
+    amount_regex = re.compile(r"([\d,]+\.\d{2})")
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text(layout=True) or ""
+            for raw_line in text.splitlines():
+                if not raw_line.strip():
+                    continue
+                
+                lower_line = raw_line.lower()
+                if "transaction history" in lower_line or "details of transaction" in lower_line:
+                    continue
+                if "private & confidential" in lower_line or "summary of account" in lower_line:
+                    continue
+                if "account alias" in lower_line or "saving bank a/c" in lower_line:
+                    continue
+                if "***end of transaction history***" in lower_line:
+                    break
+                if "dbs bank ltd. ground floor" in lower_line:
+                    continue
+
+                date_match = date_regex.match(raw_line)
+                
+                if date_match:
+                    if current_transaction:
+                        if pending_description:
+                            current_transaction["Description"] += " " + " ".join(pending_description)
+                            pending_description = []
+                        current_transaction["Description"] = clean_text(current_transaction["Description"])
+                        transactions.append(current_transaction)
+                    else:
+                        pending_description = []
+                    
+                    txn_date = date_match.group(1)
+                    rest_of_line = raw_line[date_match.end():]
+                    
+                    withdrawal = ""
+                    deposit = ""
+                    
+                    amounts = [(m.start(), m.group(1)) for m in amount_regex.finditer(raw_line)]
+                    
+                    if amounts:
+                        last_amount_idx, last_amount_str = amounts[-1]
+                        amount = parse_amount(last_amount_str)
+                        if last_amount_idx < 68: # Debit
+                            withdrawal = amount
+                        else: # Credit
+                            deposit = amount
+                            
+                        desc_part = raw_line[date_match.end():last_amount_idx].strip()
+                    else:
+                        desc_part = rest_of_line.strip()
+                        
+                    desc_parts = pending_description + [desc_part] if desc_part else pending_description
+                    pending_description = []
+                    
+                    current_transaction = {
+                        "Transaction Date": txn_date,
+                        "Value Date": txn_date,
+                        "Description": " ".join(desc_parts),
+                        "Reference Number": "",
+                        "Withdrawals": withdrawal,
+                        "Deposits": deposit,
+                        "Running Balance": ""
+                    }
+                    continue
+                    
+                desc = raw_line.strip()
+                if current_transaction:
+                    current_transaction["Description"] += " " + desc
+                else:
+                    pending_description.append(desc)
+                    
+    if current_transaction:
+        if pending_description:
+            current_transaction["Description"] += " " + " ".join(pending_description)
+        current_transaction["Description"] = clean_text(current_transaction["Description"])
+        transactions.append(current_transaction)
+        
+    if not transactions:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    df = pd.DataFrame(transactions)
+    for column in STANDARD_COLUMNS:
+        if column not in df.columns:
+            df[column] = ""
+
+    df["Description"] = df["Description"].apply(clean_text)
+    return df[STANDARD_COLUMNS]
+
+
+def extract_dbs_new_format_statement(pdf_path):
+    try:
+        import pdfplumber
+    except ImportError:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    transactions = []
+    current_transaction = None
+    pending_description = []
+
+    date_regex = re.compile(r"^\s*(\d{2}/\d{2}/\d{4})\s+(\d{2}/\d{2}/\d{4})\s+(\S+)\s+")
+    amount_regex = re.compile(r"([\d,]+\.\d{2})")
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text(layout=True) or ""
+            for raw_line in text.splitlines():
+                if not raw_line.strip():
+                    continue
+                
+                lower_line = raw_line.lower()
+                if "transaction date" in lower_line or "account statement" in lower_line:
+                    continue
+                if "account details" in lower_line or "account number" in lower_line:
+                    continue
+                if "cheque/reference" in lower_line or "number" == lower_line.strip():
+                    continue
+                if "statement of account" in lower_line or "page " in lower_line:
+                    continue
+                if "dbs bank india ltd." in lower_line:
+                    continue
+                if "summary" in lower_line and "opening balance" in lower_line:
+                    continue
+
+                date_match = date_regex.match(raw_line)
+                
+                if date_match:
+                    if current_transaction:
+                        current_transaction["Description"] += " " + " ".join(pending_description)
+                        current_transaction["Description"] = clean_text(current_transaction["Description"])
+                        transactions.append(current_transaction)
+                        
+                    pending_description = []
+                    
+                    txn_date = date_match.group(1).replace("/", "-")
+                    val_date = date_match.group(2).replace("/", "-")
+                    branch = date_match.group(3)
+                    
+                    balance = 0.0
+                    amount = 0.0
+                    amt_idx = 0
+                    
+                    amounts = [(m.start(), m.group(1)) for m in amount_regex.finditer(raw_line)]
+                    
+                    if len(amounts) >= 2:
+                        bal_idx, bal_str = amounts[-1]
+                        amt_idx, amt_str = amounts[-2]
+                        
+                        balance = parse_amount(bal_str)
+                        amount = parse_amount(amt_str)
+                        desc_part = raw_line[date_match.end():amt_idx].strip()
+                    else:
+                        desc_part = raw_line[date_match.end():].strip()
+                        
+                    desc_parts = [desc_part] if desc_part else []
+                    
+                    current_transaction = {
+                        "Transaction Date": txn_date,
+                        "Value Date": val_date,
+                        "Description": " ".join(desc_parts),
+                        "Reference Number": "",
+                        "_amount": amount,
+                        "_balance": balance,
+                        "_amt_idx": amt_idx
+                    }
+                    continue
+                    
+                desc = raw_line.strip()
+                if current_transaction:
+                    pending_description.append(desc)
+                    
+    if current_transaction:
+        current_transaction["Description"] += " " + " ".join(pending_description)
+        current_transaction["Description"] = clean_text(current_transaction["Description"])
+        transactions.append(current_transaction)
+        
+    if not transactions:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+        
+    previous_balance = None
+    final_transactions = []
+    
+    for txn in transactions:
+        amount = txn.pop("_amount")
+        balance = txn.pop("_balance")
+        amt_idx = txn.pop("_amt_idx")
+        
+        withdrawal = ""
+        deposit = ""
+        
+        if previous_balance is None:
+            if amt_idx < 63:
+                withdrawal = amount
+            else:
+                deposit = amount
+        else:
+            if round(abs(previous_balance - amount - balance), 2) == 0:
+                withdrawal = amount
+            elif round(abs(previous_balance + amount - balance), 2) == 0:
+                deposit = amount
+            else:
+                if amt_idx < 63:
+                    withdrawal = amount
+                else:
+                    deposit = amount
+                    
+        previous_balance = balance
+        txn["Withdrawals"] = withdrawal
+        txn["Deposits"] = deposit
+        txn["Running Balance"] = balance
+        final_transactions.append(txn)
+        
+    df = pd.DataFrame(final_transactions)
+    for column in STANDARD_COLUMNS:
+        if column not in df.columns:
+            df[column] = ""
+
+    df["Description"] = df["Description"].apply(clean_text)
+    return df[STANDARD_COLUMNS]
+
+
 def extract_dbs_text_statement(pdf_path):
     try:
         import pdfplumber
     except ImportError:
         print("pdfplumber is not installed. DBS text fallback unavailable.")
         return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    with pdfplumber.open(pdf_path) as pdf:
+        first_page = pdf.pages[0].extract_text() or ""
+        if "Details of Transaction" in first_page and "Debit" in first_page:
+            return extract_dbs_treasures_statement(pdf_path)
+        if "Branch code" in first_page and "Balance" in first_page:
+            return extract_dbs_new_format_statement(pdf_path)
 
     transactions = []
     current_transaction = None
@@ -667,6 +907,120 @@ def extract_table_statement(pdf_path):
 # Main Extraction Function
 # -----------------------------------------------------
 
+def is_icici_bank_statement(bank_ledger):
+    if bank_ledger is None:
+        return False
+    return "icici" in str(bank_ledger).strip().lower()
+
+
+def extract_icici_text_statement(pdf_path):
+    try:
+        import pdfplumber
+    except ImportError:
+        print("pdfplumber is not installed. ICICI text fallback unavailable.")
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    transactions = []
+    current_transaction = None
+    previous_balance = None
+    pending_description = []
+
+    date_regex = r"\d{2}-\d{2}-\d{4}"
+    amount_regex = r"[\d,]+\.\d{2}"
+    
+    txn_pattern = re.compile(
+        rf"^({date_regex})\s*({date_regex})\s*(.*?)\s*({amount_regex})\s+({amount_regex})(?:\s+(Cr|Dr))?$",
+        re.IGNORECASE
+    )
+    
+    bf_pattern = re.compile(
+        rf"^({date_regex})\s*B/F\s*(.*?)\s*({amount_regex})(?:\s+(Cr|Dr))?$",
+        re.IGNORECASE
+    )
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text() or ""
+            for raw_line in text.splitlines():
+                line = clean_text(raw_line)
+                if not line: continue
+                
+                bf_match = bf_pattern.match(line)
+                if bf_match:
+                    pending_description = []
+                    previous_balance = parse_amount(bf_match.group(3))
+                    if current_transaction:
+                        transactions.append(current_transaction)
+                        current_transaction = None
+                    continue
+                
+                txn_match = txn_pattern.match(line)
+                if txn_match:
+                    if current_transaction:
+                        if pending_description:
+                            current_transaction["Description"] += " " + " ".join(pending_description)
+                            pending_description = []
+                        current_transaction["Description"] = clean_text(current_transaction["Description"])
+                        transactions.append(current_transaction)
+                    else:
+                        pending_description = []
+                    
+                    txn_date = txn_match.group(1)
+                    val_date = txn_match.group(2)
+                    location = txn_match.group(3)
+                    amount = parse_amount(txn_match.group(4))
+                    balance = parse_amount(txn_match.group(5))
+                    
+                    withdrawal, deposit = infer_dbs_amount_side(amount, balance, previous_balance)
+                    previous_balance = balance
+                    
+                    desc_parts = pending_description + [location]
+                    pending_description = []
+                    
+                    current_transaction = {
+                        "Transaction Date": txn_date,
+                        "Value Date": val_date,
+                        "Description": " ".join(desc_parts),
+                        "Reference Number": "",
+                        "Withdrawals": withdrawal,
+                        "Deposits": deposit,
+                        "Running Balance": balance
+                    }
+                    continue
+                
+                lower_line = line.lower()
+                if "operative account in inr" in lower_line or "statement of transactions" in lower_line or "tran date value date" in lower_line:
+                    continue
+                if "page " in lower_line and " of " in lower_line:
+                    continue
+                if line.startswith("Total :") or line.startswith("Summary of Accounts") or line.startswith("Your Base Branch"):
+                    continue
+                if "your details with us" in lower_line or "mr." in lower_line or "plot no" in lower_line or "hyderabad" in lower_line or "telangana" in lower_line:
+                    continue
+                    
+                if current_transaction:
+                    current_transaction["Description"] += " " + line
+                else:
+                    pending_description.append(line)
+                    
+    if current_transaction:
+        if pending_description:
+            current_transaction["Description"] += " " + " ".join(pending_description)
+        current_transaction["Description"] = clean_text(current_transaction["Description"])
+        transactions.append(current_transaction)
+
+    if not transactions:
+        return pd.DataFrame(columns=STANDARD_COLUMNS)
+
+    df = pd.DataFrame(transactions)
+    for column in STANDARD_COLUMNS:
+        if column not in df.columns:
+            df[column] = ""
+
+    df["Description"] = df["Description"].apply(clean_text)
+    return df[STANDARD_COLUMNS]
+
+
 def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
     final_df = pd.DataFrame()
     accepted_tables = 0
@@ -676,6 +1030,7 @@ def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
     sbi_statement = is_sbi_bank_statement(bank_ledger)
     dbs_statement = is_dbs_bank_statement(bank_ledger)
     kotak_statement = is_kotak_bank_statement(bank_ledger)
+    icici_statement = is_icici_bank_statement(bank_ledger)
 
     if sbi_statement:
         print("SBI detected: using text-based row extraction by default...")
@@ -693,13 +1048,18 @@ def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
         final_df = extract_kotak_text_statement(pdf_path)
         extraction_method = "kotak_text"
 
+    if icici_statement:
+        print("ICICI detected: using text-based row extraction by default...")
+        final_df = extract_icici_text_statement(pdf_path)
+        extraction_method = "icici_text"
+
     if not has_valid_transactions(final_df):
         final_df, accepted_tables, ignored_tables = extract_table_statement(pdf_path)
         final_df = move_value_date_suffix_to_description(final_df)
         extraction_method = "table"
 
     if not has_valid_transactions(final_df):
-        if not sbi_statement and not dbs_statement and not kotak_statement:
+        if not any([sbi_statement, dbs_statement, kotak_statement, icici_statement]):
             print("Switching to text-based extraction (pdfplumber fallback)...")
             final_df = extract_text_statement(pdf_path)
             final_df = move_value_date_suffix_to_description(final_df)
@@ -735,9 +1095,11 @@ def extract_bank_statement(pdf_path, output_file=None, bank_ledger=None):
 
         wb.save(output_file)
 
-    if extraction_method in {"dbs_text_table", "kotak_text"}:
+    if extraction_method in {"dbs_text_table", "kotak_text", "icici_text"}:
         if extraction_method == "dbs_text_table":
             print("Extraction method: DBS text-table parser")
+        elif extraction_method == "icici_text":
+            print("Extraction method: ICICI text parser")
         else:
             print("Extraction method: Kotak text parser")
         print(f"Transaction rows extracted: {len(final_df)}")

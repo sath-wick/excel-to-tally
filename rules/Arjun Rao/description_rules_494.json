@@ -215,7 +215,8 @@
   },
   {
     "pattern": [
-      "REGISTRAR JNTUH"
+      "REGISTRAR JNTUH",
+      "JNTUH"
     ],
     "ledger": "Registrar JNTUH",
     "priority": 95
@@ -229,7 +230,8 @@
   },
   {
     "pattern": [
-      "HYDERABAD ZINC TECH INDUSTRIES"
+      "HYDERABAD ZINC TECH INDUSTRIES",
+      "(?i)H\\s*y\\s*d\\s*e\\s*r\\s*a\\s*b\\s*a\\s*d\\s*\\s*Z\\s*i\\s*n\\s*c\\s*\\s*T\\s*e\\s*c\\s*h\\s*\\s*I\\s*n\\s*d\\s*u\\s*s\\s*t\\s*r\\s*i\\s*e\\s*s"
     ],
     "ledger": "Hyderabad Zinc Tech",
     "priority": 95
@@ -297,6 +299,7 @@
   {
     "pattern": [
       "SBI 79382",
+      "(?i)S\\s*B\\s*I\\s*\\s*7\\s*9\\s*3\\s*8\\s*2",
       "ABBINENIARJUNRAOSBI79382",
       "XXX9382"
     ],
@@ -338,7 +341,8 @@
   },
   {
     "pattern": [
-      "KOTAK 9699"
+      "KOTAK 9699",
+      "9699"
     ],
     "is_contra": true,
     "ledger": "KOTAK 9699",
@@ -346,7 +350,7 @@
   },
   {
     "pattern": [
-      "(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\\s\\d{2,4}\\s*$"
+      "(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|SEPT|OCT|NOV|DEC)[A-Z]*\\s(?:\\d{2,4}|SAL|SALARY|SALARIES)\\s*$"
     ],
     "ledger": "Salaries",
     "priority": 85
@@ -381,7 +385,8 @@
       "KARAMTOTH LAXMAM ",
       "VIKRAM DBS",
       "TM RGP",
-      "BOLLERO DRIVER"
+      "BOLLERO DRIVER",
+      "/IFB"
     ],
     "ledger": "Labour Charges",
     "priority": 60
@@ -453,14 +458,15 @@
   },
   {
     "pattern": [
-      "SRINIVAs steel traders"
+      "SRINIVASA TRADERS"
     ],
     "ledger": "Srinivasa Traders",
     "priority": 95
   },
   {
     "pattern": [
-      "M/S SRINIVASA STEEL TRADERS"
+      "M/S SRINIVASA STEEL TRADERS",
+      "(?i)\\bS\\s*R\\s*I\\s*N\\s*I\\s*V\\s*A\\s*S\\s*S\\s*T\\s*E\\s*E\\s*L\\s*T\\s*R\\s*A\\s*D\\s*E\\s*R\\s*S\\b"
     ],
     "ledger": "Srinivasa Steels",
     "priority": 95
@@ -537,5 +543,184 @@
     ],
     "ledger": "Bhaskar Rao",
     "priority": 95
+  },
+  {
+    "pattern": [
+      "Amaravathi Galvanizing Industries"
+    ],
+    "ledger": "Amaravathi Galvanizing Industries",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "VEERABHADRA CEMENT AGENCY"
+    ],
+    "ledger": "Veerabhadra Cements",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "VIJAY & COMPANY",
+      "(?i)V\\s*i\\s*j\\s*a\\s*y\\s*\\s*A\\s*n\\s*d\\s*\\s*C\\s*o\\s*\\s*N\\s*u\\s*t\\s*s\\s*\\s*A\\s*n\\s*d\\s*\\s*B\\s*o\\s*l\\s*t\\s*s"
+    ],
+    "ledger": "Vijay & Co. Bolts",
+    "priority": 95
+  },
+  {
+    "pattern": [
+      "DHEERAJ'S METALS"
+    ],
+    "ledger": "Dheeraj Metals",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "NSB TRADERS"
+    ],
+    "ledger": "NSB Traders",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "ADITHI ENTERPRISES",
+      "(?i)Ad\\s*i\\s*t\\s*h?\\s*i\\s*\\s*E\\s*n\\s*t\\s*e\\s*r\\s*p\\s*r\\s*i\\s*s\\s*e\\s*s?"
+    ],
+    "ledger": "Adithi Enterprises",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "HANUMAN POLYMERS & ENGINEERS"
+    ],
+    "ledger": "Hanuman Polymers",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "SHREE LAKSHMI UPVC WINDOWS AND DOORS"
+    ],
+    "ledger": "Shree Lakshmi Upvc Windows",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "M/S SHRI SHYAM ENGINEERS"
+    ],
+    "ledger": "Sri Shyam Engineers",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "Jalaram Hardware"
+    ],
+    "ledger": "Jalaram Hardware",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "SENISHETTY KISHAN IRON & STEEL SHOP,KALOOR"
+    ],
+    "ledger": "Senishetty Kishan Iron and Steel",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "JAYESH STAILESS PRIVATE LIMITED"
+    ],
+    "ledger": "Jayesh Metals",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "M/S SREE KRISHNA AUTOMOTIVES HYDERABAD PVT LTD"
+    ],
+    "ledger": "M/S SREE KRISHNA AUTOMOTIVES HYDERABAD PVT LTD",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "HYDERI ENTERPRISES",
+      "(?i)H\\s*y\\s*d\\s*a\\s*r\\s*i\\s*\\s*E\\s*n\\s*t\\s*e\\s*r\\s*p\\s*r\\s*i\\s*s\\s*e\\s*s"
+    ],
+    "ledger": "Hyderi Enterprises",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "INTERGLOBE AVIATION LIMITED"
+    ],
+    "ledger": "Interglobe Aviation",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "M/S CHOUHAN STEEL MODULAR KITCHEN"
+    ],
+    "ledger": "Chouhan Steels",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "SRI RAGHAVENDRA ENTERPRISES",
+      "(?i)S\\s*r\\s*i\\s*\\s*R\\s*a\\s*g\\s*h\\s*a\\s*v\\s*e\\s*n\\s*d\\s*a\\s*r\\s*\\s*E\\s*n\\s*t\\s*e\\s*r\\s*p\\s*r\\s*i\\s*s\\s*e\\s*s"
+    ],
+    "ledger": "Sri Raghavendra Enterprises",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "LAKSHMI GANAPATHI ENTERPRISES"
+    ],
+    "ledger": "LAKSHMI GANAPATHI",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "(?i)A\\s*n\\s*u\\s*m\\s*o\\s*l\\s*u\\s*\\s*P\\s*o\\s*t\\s*h\\s*u\\s*r\\s*u\\s*t\\s*a\\s*i\\s*a\\s*h"
+    ],
+    "ledger": "ANUMOLU POTHURSIAH KRNT",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "Bhavani Stor es MBNR"
+    ],
+    "ledger": "BHAVANI STORES",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "(?i)A\\s*R\\s*a\\s*g\\s*h\\s*a\\s*v\\s*e\\s*n\\s*d\\s*a\\s*r\\s*\\s*S\\s*u\\s*o\\s*r"
+    ],
+    "ledger": "A RAGHAV",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "(?i)G\\s*D\\s*e\\s*v\\s*i\\s*K\\s*a\\s*n\\s*a\\s*k\\s*a\\s*d\\s*u\\s*r\\s*g\\s*a"
+    ],
+    "ledger": "DEVI KANAKADURGA",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "(?i)S\\s*h\\s*a\\s*i\\s*k\\s*\\s*M\\s*a\\s*i\\s*b\\s*a\\s*l\\s*i\\s*s\\s*a\\s*h\\s*e\\s*b"
+    ],
+    "ledger": "Shaik Maibalisaheb",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "(?i)N\\s*a\\s*r\\s*a\\s*y\\s*a\\s*n\\s*a\\s*n\\s*\\s*A\\s*\\s*S\\s*i\\s*n\\s*g\\s*a\\s*r\\s*a\\s*m"
+    ],
+    "ledger": "Narayanan a Singaram",
+    "priority": 100
+  },
+  {
+    "pattern": [
+      "(?i)R\\s*A\\s*M\\s*U\\s*\\s*A\\s*S\\s*S\\s*O\\s*C\\s*I\\s*A\\s*T\\s*E\\s*\\s*C\\s*O\\s*N\\s*S\\s*T\\s*R\\s*U\\s*C\\s*T\\s*I\\s*O\\s*N\\s*S"
+    ],
+    "ledger": "Ramu Associate Constructions",
+    "priority": 100
   }
 ]

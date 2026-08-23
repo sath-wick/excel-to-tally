@@ -217,10 +217,6 @@ class TallyImporterGUI:
             relief=tk.FLAT, 
             font=("Segoe UI", 10, "bold")
         )
-        self.file_entry.bind("<Escape>", self.on_esc_key)
-        self.file_entry.bind("<Return>", self.on_enter_key)
-        self.file_entry.bind("<Up>", self.on_arrow_key)
-        self.file_entry.bind("<Down>", self.on_arrow_key)
         
         # Form alerts & status
         self.warning_label = tk.Label(
@@ -423,7 +419,7 @@ class TallyImporterGUI:
             if self.listbox.size() > 0:
                 self.listbox.selection_set(0)
                 self.listbox.see(0)
-            return
+            return "break"
         idx = curr[0]
         if event.keysym == "Up":
             new_idx = max(0, idx - 1)
@@ -434,11 +430,12 @@ class TallyImporterGUI:
         self.listbox.selection_set(new_idx)
         self.listbox.activate(new_idx)
         self.listbox.see(new_idx)
+        return "break"
         
     def on_enter_key(self, event=None):
         if self.quit_frame.winfo_viewable():
             # If quit dialog has focus, Yes button command will handle exit
-            return
+            return "break"
             
         curr = self.listbox.curselection()
         if not curr:
@@ -446,15 +443,16 @@ class TallyImporterGUI:
                 self.listbox.selection_set(0)
                 curr = (0,)
             else:
-                return
+                return "break"
                 
         selected_val = self.listbox.get(curr[0])
         self.apply_selection(selected_val)
+        return "break"
         
     def on_esc_key(self, event=None):
         if self.quit_frame.winfo_viewable():
             self.hide_quit_dialog()
-            return
+            return "break"
             
         if self.active_index == 0:
             if self.on_exit_callback:
@@ -465,6 +463,7 @@ class TallyImporterGUI:
             self.active_index -= 1
             self.filter_text = ""
             self.update_active_field()
+        return "break"
             
     def on_key_typed(self, event):
         # If quit dialog is active
@@ -608,6 +607,8 @@ class TallyImporterGUI:
                 if i == 4:
                     self.file_entry.pack_forget()
                     val.pack(side=tk.LEFT, fill=tk.X, expand=True)
+                    if self.root.focus_get() == self.file_entry:
+                        self.root.focus_set()
                     
                 if i == self.active_index:
                     cursor.config(text="👉")
